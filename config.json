@@ -1,0 +1,16 @@
+{
+		"model_path": "/Users/elias/Library/Application Support/nomic.ai/GPT4All/Llama-3.2-3B-Instruct-Q4_0.gguf",
+    "tasks_loop_seconds": 30,
+    "context_message_count": 3,
+    "history_limit": 5,
+    "reply_to_bots": false,
+		"testing_mode": true,
+    "testing_user_ids": [204702406607372288],
+    "servers": {
+        "1000875859135189063": {
+            "channels": [1000875859604934746],
+            "exclude_user_ids": [],
+						"prompt_file": "prompt1.txt"
+        }
+    }
+}
