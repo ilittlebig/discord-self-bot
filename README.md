@@ -80,11 +80,11 @@ pip install -r requirements.txt
         "history_limit": 5,
         "reply_to_bots": false,
         "testing_mode": true,
-        "testing_user_ids": [user_id_123, user_id_456],
+        "testing_user_ids": [111, 222],
         "servers": {
-            "server_id_123": {
-                "channels": [channel_id_123, channel_id_456],
-                "exclude_user_ids": [user_id_123456789, user_id_123456789],
+            "333": {
+                "channels": [444, 555],
+                "exclude_user_ids": [666, 777],
                 "prompt_file": "prompt.txt"
             },
         }
