@@ -69,6 +69,7 @@ async def handle_channel(client, server_id, channel_id, system_prompt, exclude_u
         log_info(f"Processing latest message in #{channel.name} ({channel.id}):", True)
         log_info(f"Author: {latest_message.author.name} ({latest_message.author.id})")
         log_info(f"Content: {latest_message.content}")
+        print()
 
         if not REPLY_TO_BOTS and latest_message.author.bot:
             log_info("Skipping bot message because REPLY_TO_BOTS is False", True)
@@ -103,10 +104,12 @@ def build_context(messages):
         f"{msg.author.name}: {msg.content}" for msg in reversed(relevant_messages)
     )
 
-    log_info(f"Context for AI reply (last {CONTEXT_MESSAGE_COUNT} messages):", True)
     if not context_str:
         return
+
+    log_info(f"Context for AI reply (last {CONTEXT_MESSAGE_COUNT} messages):")
     log_info(f"{context_str}")
+    return context_str
 
 
 async def generate_ai_response(channel, latest_message, context_str, system_prompt):

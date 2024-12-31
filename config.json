@@ -1,5 +1,5 @@
 {
-		"model_path": "/Users/elias/Library/Application Support/nomic.ai/GPT4All/Llama-3.2-3B-Instruct-Q4_0.gguf",
+		"model_path": "/Users/elias/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
     "tasks_loop_seconds": 10,
     "context_message_count": 0,
     "history_limit": 5,
