@@ -49,14 +49,15 @@ async def get_ai_response(prompt: str, context: str, system_prompt: str) -> str:
     Generate a short, single-sentence response using GPT4All locally.
     """
     def build_prompt(sys_prompt, ctx, user_prompt):
-        return (
+         return (
             f"{sys_prompt}\n\n"
-            f"recent messages (context):\n{ctx}\n\n"
-            f"user: {user_prompt}\n"
-            f"assistant (one-sentence reply, no capitals or punctuation):"
+            f"Conversation so far:\n{ctx}\n\n"
+            f"User: {user_prompt}\n"
+            f"Assistant:"
         )
 
     full_prompt = build_prompt(system_prompt, context, prompt)
+    print(full_prompt)
     for attempt in range(5):
         try:
             response_data = llm(full_prompt, max_tokens=50)

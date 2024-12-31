@@ -3,26 +3,23 @@
 # Author: Elias Sjödin
 # Created: 2024-12-31
 
-
 import discord
 import random
 import asyncio
 from discord.ext import tasks
 from config import (
     SERVERS, TESTING_MODE, TESTING_USER_IDS, REPLY_TO_BOTS,
-    CONTEXT_MESSAGE_COUNT, HISTORY_LIMIT, TASKS_LOOP_SECONDS
+    CONTEXT_MESSAGE_COUNT, TASKS_LOOP_SECONDS
 )
 from ai import get_ai_response, load_prompt
 from logger import log_info, log_warning, log_error, log_success, log_custom
 from colorama import Fore
+from conversation import add_to_history, get_conversation_context
 
 last_message_ids = {}
 
 @tasks.loop(seconds=TASKS_LOOP_SECONDS)
 async def reply_to_messages(client):
-    """
-    Loop that periodically checks messages in each channel and replies.
-    """
     log_custom("EVENT", "==== Starting message processing loop ====", Fore.CYAN)
     for server_id, server_config in SERVERS.items():
         try:
@@ -57,15 +54,13 @@ async def handle_channel(client, server_id, channel_id, system_prompt, exclude_u
             log_warning(f"Channel {channel_id} not found in server {server_id}")
             return
 
-        messages = []
-        async for message in channel.history(limit=HISTORY_LIMIT):
-            messages.append(message)
-
-        if not messages:
+        async for latest_message in channel.history(limit=1):
+            break
+        else:
             log_info(f"No messages found in channel #{channel.name} ({channel.id})")
             return
+        add_to_history(server_id, channel_id, latest_message.author.name, latest_message.content)
 
-        latest_message = messages[0]
         log_info(f"Processing latest message in #{channel.name} ({channel.id}):", True)
         log_info(f"Author: {latest_message.author.name} ({latest_message.author.id})")
         log_info(f"Content: {latest_message.content}")
@@ -78,6 +73,7 @@ async def handle_channel(client, server_id, channel_id, system_prompt, exclude_u
         already_replied = latest_message.id == last_message_ids.get(channel_id)
         is_own_message = (latest_message.author == client.user)
 
+        # Skip conditions
         if already_replied:
             log_info("Message already replied to. Skipping...", True)
             return
@@ -91,25 +87,14 @@ async def handle_channel(client, server_id, channel_id, system_prompt, exclude_u
             log_info("Author is in the excluded user list. Skipping...", True)
             return
 
-        context_str = build_context(messages)
+        # Build context from conversation history
+        context_str = get_conversation_context(server_id, channel_id, max_messages=CONTEXT_MESSAGE_COUNT)
+
+        # Generate and send reply
         await generate_ai_response(channel, latest_message, context_str, system_prompt)
         last_message_ids[channel_id] = latest_message.id
     except Exception as e:
         log_error(f"Error in channel {channel_id}: {e}")
-
-
-def build_context(messages):
-    relevant_messages = messages[1 : CONTEXT_MESSAGE_COUNT + 1]
-    context_str = "\n".join(
-        f"{msg.author.name}: {msg.content}" for msg in reversed(relevant_messages)
-    )
-
-    if not context_str:
-        return
-
-    log_info(f"Context for AI reply (last {CONTEXT_MESSAGE_COUNT} messages):")
-    log_info(f"{context_str}")
-    return context_str
 
 
 async def generate_ai_response(channel, latest_message, context_str, system_prompt):

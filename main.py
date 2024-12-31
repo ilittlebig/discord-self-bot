@@ -1,3 +1,8 @@
+#
+#
+# Author: Elias Sjödin
+# Created: 2024-12-31
+
 import sys
 sys.path.append("src")
 

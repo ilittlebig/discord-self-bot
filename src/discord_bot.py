@@ -14,5 +14,11 @@ async def on_ready():
     print(f"Logged in as {client.user}!")
     reply_to_messages.start(client)
 
+
+#@client.event
+#async def on_message(message):
+#    print(message)
+
+
 def run_bot():
     client.run(DISCORD_BOT_TOKEN)
