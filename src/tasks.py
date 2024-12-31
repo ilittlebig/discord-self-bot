@@ -8,13 +8,13 @@ import random
 import asyncio
 from collections import deque
 from discord.ext import tasks
-from config import (
-    SERVERS, TESTING_MODE, TESTING_USER_IDS,
-    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN, QUEUE_COOLDOWN,
-)
 from ai import get_ai_response, load_prompt, is_message_relevant
 from logger import log_info, log_warning, log_error, log_success, log_custom
 from conversation import add_to_history, get_conversation_context
+from config import (
+    SERVERS, TESTING_MODE, TESTING_USER_IDS, MAX_HISTORY_MESSAGE_LENGTH,
+    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN, QUEUE_COOLDOWN,
+)
 
 reply_queue = deque()
 last_replied_time = {}
@@ -36,7 +36,6 @@ async def process_message(client, message):
         channel_id = message.channel.id
 
         if server_id not in SERVERS or channel_id not in SERVERS[server_id]["channels"]:
-            log_warning(f"Server ID {server_id} or Channel ID {channel_id} not configured in SERVERS.")
             return
 
         server_config = SERVERS[server_id]
@@ -44,6 +43,9 @@ async def process_message(client, message):
         prompt_file = server_config["prompt_file"]
         system_prompt = load_prompt(prompt_file)
 
+        if len(message.content) > MAX_HISTORY_MESSAGE_LENGTH:
+            log_warning(f"Message from {message.author.name} exceeds max history length ({MAX_HISTORY_MESSAGE_LENGTH} chars). Not adding to history.")
+            return
         add_to_history(server_id, channel_id, message.author.name, message.content)
 
         log_info(f"Processing message in #{message.channel.name} ({channel_id}):", True)

@@ -6,10 +6,13 @@
 import discord
 import os
 import string
-from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS
 from logger import log_info, log_custom, log_error
 from openai import OpenAI
 from colorama import Fore
+from config import (
+    MODEL, OPENAI_API_KEY, REPLY_TO_BOTS,
+    MAX_CHARACTERS_TO_REPLY_TO, MIN_CHARACTERS_TO_REPLY_TO
+)
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -70,14 +73,6 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
     is_direct_reply = message.reference is not None and message.reference.resolved is not None
     is_direct_reply = is_direct_reply and message.reference.resolved.author.id == bot_user_id
 
-    if is_direct_reply:
-        log_custom(
-            "RELEVANCE",
-            "Message is a direct reply to the bot. Automatically deemed relevant.",
-            Fore.CYAN
-        )
-        return True
-
     if message.author.bot and not REPLY_TO_BOTS:
         log_custom(
             "RELEVANCE",
@@ -93,6 +88,30 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
             Fore.CYAN
         )
         return False
+
+    if len(message.content.split()) < MINIMUM_CHARACTERS_TO_REPLY_TO:
+        log_custom(
+            "RELEVANCE",
+            "Message is too short. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
+
+    if len(message.content) > MAXIMUM_CHARACTERS_TO_REPLY_TO:
+        log_custom(
+            "RELEVANCE",
+            "Message is too long. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
+
+    if is_direct_reply:
+        log_custom(
+            "RELEVANCE",
+            "Message is a direct reply to the bot. Automatically deemed relevant.",
+            Fore.CYAN
+        )
+        return True
 
     relevance_prompt = load_relevance_prompt(prompt_file)
     full_relevance_prompt = (
