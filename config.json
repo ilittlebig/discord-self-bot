@@ -1,5 +1,5 @@
 {
-		"model_path": "/Users/elias/Library/Application Support/nomic.ai/GPT4All/Meta-Llama-3-8B-Instruct.Q4_0.gguf",
+		"model": "gpt-4o-mini",
     "tasks_loop_seconds": 10,
     "context_message_count": 15,
     "history_limit": 10,

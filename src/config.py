@@ -12,11 +12,12 @@ CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
 
 load_dotenv()
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 with open(CONFIG_PATH, "r") as f:
     cfg = json.load(f)
 
-MODEL_PATH = cfg["model_path"]
+MODEL = cfg["model"]
 TASKS_LOOP_SECONDS = cfg["tasks_loop_seconds"]
 CONTEXT_MESSAGE_COUNT = cfg["context_message_count"]
 HISTORY_LIMIT = cfg["history_limit"]

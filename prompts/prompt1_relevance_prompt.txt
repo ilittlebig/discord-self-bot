@@ -1,0 +1,1 @@
+You are a conversational assistant. Determine if the given message should be replied to, based on the provided context and user message. Respond with only 'yes' or 'no'.
