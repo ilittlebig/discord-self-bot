@@ -9,8 +9,8 @@ import asyncio
 from collections import deque
 from discord.ext import tasks
 from config import (
-    SERVERS, TESTING_MODE, TESTING_USER_IDS, REPLY_TO_BOTS,
-    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN
+    SERVERS, TESTING_MODE, TESTING_USER_IDS,
+    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN, QUEUE_COOLDOWN,
 )
 from ai import get_ai_response, load_prompt, is_message_relevant
 from logger import log_info, log_warning, log_error, log_success, log_custom
@@ -20,7 +20,7 @@ reply_queue = deque()
 last_replied_time = {}
 last_message_ids = {}
 
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=QUEUE_COOLDOWN)
 async def process_reply_queue():
     if reply_queue:
         message, context_str, system_prompt = reply_queue.popleft()

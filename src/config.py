@@ -19,6 +19,7 @@ with open(CONFIG_PATH, "r") as f:
 
 MODEL = cfg["model"]
 REPLY_COOLDOWN = cfg["reply_cooldown"]
+QUEUE_COOLDOWN = cfg["queue_cooldown"]
 CONTEXT_MESSAGE_COUNT = cfg["context_message_count"]
 HISTORY_LIMIT = cfg["history_limit"]
 REPLY_TO_BOTS = cfg["reply_to_bots"]

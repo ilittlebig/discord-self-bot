@@ -6,7 +6,7 @@
 import discord
 import os
 import string
-from config import MODEL, OPENAI_API_KEY
+from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS
 from logger import log_info, log_custom, log_error
 from openai import OpenAI
 from colorama import Fore
@@ -77,6 +77,14 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
             Fore.CYAN
         )
         return True
+
+    if message.author.bot and not REPLY_TO_BOTS:
+        log_custom(
+            "RELEVANCE",
+            "Message is from a bot, and REPLY_TO_BOTS is set to False. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
 
     if message.attachments and not message.content.strip():
         log_custom(

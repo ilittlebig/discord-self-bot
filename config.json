@@ -1,6 +1,7 @@
 {
 		"model": "gpt-4o-mini",
     "reply_cooldown": 120,
+    "queue_cooldown": 30,
     "context_message_count": 15,
     "history_limit": 10,
     "reply_to_bots": false,
