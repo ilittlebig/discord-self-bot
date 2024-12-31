@@ -7,8 +7,9 @@ import discord
 import os
 import string
 from config import MODEL, OPENAI_API_KEY
-from logger import log_info, log_error
+from logger import log_info, log_custom, log_error
 from openai import OpenAI
+from colorama import Fore
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -69,13 +70,26 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
     is_direct_reply = message.reference is not None and message.reference.resolved is not None
     is_direct_reply = is_direct_reply and message.reference.resolved.author.id == bot_user_id
 
-    relevance_prompt = load_relevance_prompt(prompt_file)
-    reply_info = "The message is a direct reply to the bot." if is_direct_reply else "The message is not a direct reply to the bot."
+    if is_direct_reply:
+        log_custom(
+            "RELEVANCE",
+            "Message is a direct reply to the bot. Automatically deemed relevant.",
+            Fore.CYAN
+        )
+        return True
 
+    if message.attachments and not message.content.strip():
+        log_custom(
+            "RELEVANCE",
+            "Message contains only attachments. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
+
+    relevance_prompt = load_relevance_prompt(prompt_file)
     full_relevance_prompt = (
         f"Conversation so far:\n{context}\n\n"
         f"User's message: {message.content}\n\n"
-        f"{reply_info}\n\n"
         f"Determine if this message is worth replying to. Respond with only 'yes' or 'no'."
     )
 

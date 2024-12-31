@@ -1,6 +1,6 @@
 {
 		"model": "gpt-4o-mini",
-    "tasks_loop_seconds": 10,
+    "reply_cooldown": 120,
     "context_message_count": 15,
     "history_limit": 10,
     "reply_to_bots": false,

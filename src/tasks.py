@@ -6,17 +6,29 @@
 import discord
 import random
 import asyncio
+from collections import deque
 from discord.ext import tasks
 from config import (
     SERVERS, TESTING_MODE, TESTING_USER_IDS, REPLY_TO_BOTS,
-    CONTEXT_MESSAGE_COUNT, TASKS_LOOP_SECONDS
+    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN
 )
 from ai import get_ai_response, load_prompt, is_message_relevant
 from logger import log_info, log_warning, log_error, log_success, log_custom
-from colorama import Fore
 from conversation import add_to_history, get_conversation_context
 
+reply_queue = deque()
+last_replied_time = {}
 last_message_ids = {}
+
+@tasks.loop(seconds=30)
+async def process_reply_queue():
+    if reply_queue:
+        message, context_str, system_prompt = reply_queue.popleft()
+        try:
+            await handle_reply(message, context_str, system_prompt)
+            last_replied_time[message.channel.id] = asyncio.get_event_loop().time()
+        except Exception as e:
+            log_error(f"Error processing queued reply: {e}")
 
 async def process_message(client, message):
     try:
@@ -38,6 +50,10 @@ async def process_message(client, message):
         log_info(f"Author: {message.author.name} ({message.author.id})")
         log_info(f"Content: {message.content}")
 
+        if TESTING_MODE and message.author.id not in TESTING_USER_IDS:
+            log_info("Testing mode is enabled, but the message author is not in the allowed testing users. Skipping.")
+            return
+
         context_str = get_conversation_context(server_id, channel_id, max_messages=CONTEXT_MESSAGE_COUNT)
         should_reply = await is_message_relevant(message, context_str, prompt_file, client.user.id)
 
@@ -45,9 +61,25 @@ async def process_message(client, message):
             log_info("Message deemed irrelevant by AI. Skipping reply.", True)
             return
 
-        reply = await get_ai_response(message.content, context_str, system_prompt)
-        log_success(f"Generated AI reply: {reply}", True)
-        await message.reply(reply)
-        log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
+        now = asyncio.get_event_loop().time()
+        if channel_id in last_replied_time and now - last_replied_time[channel_id] < REPLY_COOLDOWN:
+            log_info("Cooldown active. Queuing the message for later reply.", True)
+            reply_queue.append((message, context_str, system_prompt))
+            return
+
+        await handle_reply(message, context_str, system_prompt)
+        last_replied_time[channel_id] = now
     except Exception as e:
         log_error(f"Error processing message: {e}")
+
+
+async def handle_reply(message, context_str, system_prompt):
+    reply = await get_ai_response(message.content, context_str, system_prompt)
+    log_success(f"Generated AI reply: {reply}", True)
+
+    delay = random.uniform(5, 10)
+    log_info(f"Waiting {delay:.1f} seconds before replying")
+    await asyncio.sleep(delay)
+
+    log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
+    await message.reply(reply)
