@@ -89,7 +89,7 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
         )
         return False
 
-    if len(message.content.split()) < MINIMUM_CHARACTERS_TO_REPLY_TO:
+    if len(message.content.split()) < MIN_CHARACTERS_TO_REPLY_TO:
         log_custom(
             "RELEVANCE",
             "Message is too short. Deemed irrelevant.",
@@ -97,7 +97,7 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
         )
         return False
 
-    if len(message.content) > MAXIMUM_CHARACTERS_TO_REPLY_TO:
+    if len(message.content) > MAX_CHARACTERS_TO_REPLY_TO:
         log_custom(
             "RELEVANCE",
             "Message is too long. Deemed irrelevant.",
