@@ -1,7 +1,9 @@
 {
 	"model": "gpt-4o-mini",
-	"reply_cooldown": 120,
+	"reply_cooldown": 60,
 	"queue_cooldown": 30,
+	"random_engagement": 0.5,
+	"reply_instantly": true,
 	"reply_to_bots": false,
 	"testing_mode": false,
 	"testing_user_ids": [204702406607372288],
@@ -12,7 +14,7 @@
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 10,
 			"history_limit": 10,
-			"min_history_message_length": 0,
+			"min_history_message_length": 3,
 			"max_history_message_length": 300
 		},
 		"1221451830299725915": {
@@ -21,7 +23,7 @@
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 10,
 			"history_limit": 10,
-			"min_history_message_length": 0,
+			"min_history_message_length": 3,
 			"max_history_message_length": 300
 		}
 	}

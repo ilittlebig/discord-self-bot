@@ -10,7 +10,7 @@ import random
 from logger import log_info, log_custom, log_error
 from openai import OpenAI
 from colorama import Fore
-from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS
+from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS, RANDOM_ENGAGEMENT
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -116,7 +116,7 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
             )
             return False
 
-    if random.random() < 0.1:
+    if random.random() < RANDOM_ENGAGEMENT:
         log_custom(
             "RELEVANCE",
             "Message selected for random engagement.",

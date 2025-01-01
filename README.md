@@ -80,6 +80,8 @@ pip install -r requirements.txt
     	"model": "gpt-4o-mini",
     	"reply_cooldown": 120,
     	"queue_cooldown": 30,
+        "random_engagement": 0.3,
+        "reply_instantly": false,
     	"reply_to_bots": false,
     	"testing_mode": false,
     	"testing_user_ids": [204702406607372288],
@@ -181,6 +183,8 @@ pip install -r requirements.txt
 ## Key Configuration Options
 - **Model**: Specify the OpenAI model (e.g., "gpt-4o-mini").
 - **reply_cooldown**: Minimum time (in seconds) between replies in the same channel.
+- **random_engagement**: Defines how often the bot responds to irrelevant messages randomly.
+- **reply_instantly**: Makes the bot reply to relevant messages immediately when enabled.
 - **queue_cooldown**: Time interval (in seconds) to process the reply queue.
 - **context_message_count**: Number of previous messages to include in AI context (can be set per server).
 - **history_limit**: Max number of messages to store in history for context.

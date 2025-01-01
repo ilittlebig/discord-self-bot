@@ -13,7 +13,7 @@ from logger import log_info, log_warning, log_error, log_success, log_custom
 from conversation import add_to_history, get_conversation_context
 from config import (
     SERVERS, TESTING_MODE, TESTING_USER_IDS,
-    REPLY_COOLDOWN, QUEUE_COOLDOWN,
+    REPLY_COOLDOWN, QUEUE_COOLDOWN, REPLY_INSTANTLY
 )
 
 reply_queue = deque()
@@ -54,7 +54,7 @@ async def process_message(client, message):
         max_history_message_length = server_config["max_history_message_length"]
 
         if len(message.content) > max_history_message_length:
-            log_warning(f"Message from {message.author.name} exceeds max history length ({MAX_HISTORY_MESSAGE_LENGTH} chars). Skipping...")
+            log_warning(f"Message from {message.author.name} exceeds max history length ({max_history_message_length} chars). Skipping...")
             return
         if len(message.content) < min_history_message_length:
             log_warning(f"Message from {message.author.name} is too short ({len(message.content)} chars). Skipping...")
@@ -92,9 +92,10 @@ async def handle_reply(message, context_str, system_prompt):
     reply = await get_ai_response(message.content, context_str, system_prompt)
     log_success(f"Generated AI reply: {reply}", True)
 
-    delay = random.uniform(5, 10)
-    log_info(f"Waiting {delay:.1f} seconds before replying")
-    await asyncio.sleep(delay)
+    if not REPLY_INSTANTLY:
+        delay = random.uniform(5, 10)
+        log_info(f"Waiting {delay:.1f} seconds before replying")
+        await asyncio.sleep(delay)
 
     log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
     await message.reply(reply)
