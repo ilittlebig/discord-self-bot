@@ -12,9 +12,8 @@ from ai import get_ai_response, load_prompt, is_message_relevant
 from logger import log_info, log_warning, log_error, log_success, log_custom
 from conversation import add_to_history, get_conversation_context
 from config import (
-    SERVERS, TESTING_MODE, TESTING_USER_IDS, MAX_HISTORY_MESSAGE_LENGTH,
-    CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN, QUEUE_COOLDOWN,
-    MIN_HISTORY_MESSAGE_LENGTH,
+    SERVERS, TESTING_MODE, TESTING_USER_IDS,
+    REPLY_COOLDOWN, QUEUE_COOLDOWN,
 )
 
 reply_queue = deque()
@@ -46,13 +45,18 @@ async def process_message(client, message):
         prompt_file = server_config["prompt_file"]
         system_prompt = load_prompt(prompt_file)
 
-        if len(message.content) > MAX_HISTORY_MESSAGE_LENGTH:
+        context_message_count = server_config["context_message_count"]
+        history_limit = server_config["history_limit"]
+        min_history_message_length = server_config["min_history_message_length"]
+        max_history_message_length = server_config["max_history_message_length"]
+
+        if len(message.content) > max_history_message_length:
             log_warning(f"Message from {message.author.name} exceeds max history length ({MAX_HISTORY_MESSAGE_LENGTH} chars). Skipping...")
             return
-        if len(message.content) < MIN_HISTORY_MESSAGE_LENGTH:
+        if len(message.content) < min_history_message_length:
             log_warning(f"Message from {message.author.name} is too short ({len(message.content)} chars). Skipping...")
             return
-        add_to_history(server_id, channel_id, message.author.name, message.content)
+        add_to_history(server_id, channel_id, message.author.name, message.content, history_limit)
 
         log_info(f"Processing message in #{message.channel.name} ({channel_id}):", True)
         log_info(f"Author: {message.author.name} ({message.author.id})")
@@ -62,7 +66,7 @@ async def process_message(client, message):
             log_info("Testing mode is enabled, but the message author is not in the allowed testing users. Skipping.")
             return
 
-        context_str = get_conversation_context(server_id, channel_id, max_messages=CONTEXT_MESSAGE_COUNT)
+        context_str = get_conversation_context(server_id, channel_id, max_messages=context_message_count)
         should_reply = await is_message_relevant(message, context_str, prompt_file, client.user.id)
 
         if not should_reply:

@@ -3,11 +3,9 @@
 # Author: Elias Sjödin
 # Created: 2024-12-31
 
-from config import HISTORY_LIMIT
-
 conversation_history = {}
 
-def add_to_history(server_id, channel_id, author, content):
+def add_to_history(server_id, channel_id, author, content, history_limit):
     if server_id not in conversation_history:
         conversation_history[server_id] = {}
     if channel_id not in conversation_history[server_id]:
@@ -16,7 +14,7 @@ def add_to_history(server_id, channel_id, author, content):
     conversation_history[server_id][channel_id].append(f"{author}: {content}")
 
     # Limit history size
-    if len(conversation_history[server_id][channel_id]) > HISTORY_LIMIT:
+    if len(conversation_history[server_id][channel_id]) > history_limit:
         conversation_history[server_id][channel_id].pop(0)
 
 
