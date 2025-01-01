@@ -14,6 +14,7 @@ from conversation import add_to_history, get_conversation_context
 from config import (
     SERVERS, TESTING_MODE, TESTING_USER_IDS, MAX_HISTORY_MESSAGE_LENGTH,
     CONTEXT_MESSAGE_COUNT, REPLY_COOLDOWN, QUEUE_COOLDOWN,
+    MIN_HISTORY_MESSAGE_LENGTH,
 )
 
 reply_queue = deque()
@@ -35,6 +36,8 @@ async def process_message(client, message):
         server_id = str(message.guild.id)
         channel_id = message.channel.id
 
+        if message.author == client.user and not TESTING_MODE:
+            return
         if server_id not in SERVERS or channel_id not in SERVERS[server_id]["channels"]:
             return
 
@@ -44,7 +47,10 @@ async def process_message(client, message):
         system_prompt = load_prompt(prompt_file)
 
         if len(message.content) > MAX_HISTORY_MESSAGE_LENGTH:
-            log_warning(f"Message from {message.author.name} exceeds max history length ({MAX_HISTORY_MESSAGE_LENGTH} chars). Not adding to history.")
+            log_warning(f"Message from {message.author.name} exceeds max history length ({MAX_HISTORY_MESSAGE_LENGTH} chars). Skipping...")
+            return
+        if len(message.content) < MIN_HISTORY_MESSAGE_LENGTH:
+            log_warning(f"Message from {message.author.name} is too short ({len(message.content)} chars). Skipping...")
             return
         add_to_history(server_id, channel_id, message.author.name, message.content)
 
@@ -60,7 +66,7 @@ async def process_message(client, message):
         should_reply = await is_message_relevant(message, context_str, prompt_file, client.user.id)
 
         if not should_reply:
-            log_info("Message deemed irrelevant by AI. Skipping reply.", True)
+            log_info("Message deemed irrelevant by AI. Skipping reply.")
             return
 
         now = asyncio.get_event_loop().time()

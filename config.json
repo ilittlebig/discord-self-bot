@@ -2,23 +2,22 @@
 		"model": "gpt-4o-mini",
     "reply_cooldown": 120,
     "queue_cooldown": 30,
-		"min_characters_to_reply_to": 2,
-		"max_characters_to_reply_to": 500,
     "context_message_count": 15,
     "history_limit": 10,
+		"min_history_message_length": 0,
 		"max_history_message_length": 300,
     "reply_to_bots": false,
 		"testing_mode": false,
     "testing_user_ids": [204702406607372288],
     "servers": {
         "1000875859135189063": {
-            "channels": [1000875859604934746],
-            "exclude_user_ids": [],
+						"channels": [1000875859604934746],
+						"exclude_user_ids": [],
 						"prompt_file": "prompt1.txt"
         },
         "1221451830299725915": {
-            "channels": [1323540450719830070],
-            "exclude_user_ids": [],
+						"channels": [1323540450719830070],
+						"exclude_user_ids": [],
 						"prompt_file": "prompt1.txt"
         }
     }

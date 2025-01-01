@@ -6,13 +6,11 @@
 import discord
 import os
 import string
+import random
 from logger import log_info, log_custom, log_error
 from openai import OpenAI
 from colorama import Fore
-from config import (
-    MODEL, OPENAI_API_KEY, REPLY_TO_BOTS,
-    MAX_CHARACTERS_TO_REPLY_TO, MIN_CHARACTERS_TO_REPLY_TO
-)
+from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -71,20 +69,28 @@ async def get_ai_response(prompt: str, context: str, system_prompt: str) -> str:
 
 async def is_message_relevant(message: discord.Message, context: str, prompt_file: str, bot_user_id: int) -> bool:
     is_direct_reply = message.reference is not None and message.reference.resolved is not None
-    is_direct_reply_to_bot = is_direct_reply and message.reference.resolved.author.id == bot_user_id
+    is_direct_reply = is_direct_reply and message.reference.resolved.author.id == bot_user_id
 
-    if is_direct_reply and not is_direct_reply_to_bot:
+    if is_direct_reply:
         log_custom(
             "RELEVANCE",
-            "Message is a reply to someone else. Deemed irrelevant.",
+            "Message is a direct reply to the bot. Automatically deemed relevant.",
             Fore.CYAN
         )
-        return False
+        return True
 
     if message.author.bot and not REPLY_TO_BOTS:
         log_custom(
             "RELEVANCE",
             "Message is from a bot, and REPLY_TO_BOTS is set to False. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
+
+    if message.content.strip().startswith("http://") or message.content.strip().startswith("https://"):
+        log_custom(
+            "RELEVANCE",
+            "Message contains only a link. Deemed irrelevant.",
             Fore.CYAN
         )
         return False
@@ -97,26 +103,19 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
         )
         return False
 
-    if len(message.content.split()) < MIN_CHARACTERS_TO_REPLY_TO:
-        log_custom(
-            "RELEVANCE",
-            "Message is too short. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False
+    if message.reference is not None and message.reference.resolved is not None:
+        if message.reference.resolved.author.id != bot_user_id:
+            log_custom(
+                "RELEVANCE",
+                "Message is a reply to someone else. Deemed irrelevant.",
+                Fore.CYAN
+            )
+            return False
 
-    if len(message.content) > MAX_CHARACTERS_TO_REPLY_TO:
+    if random.random() < 0.1:
         log_custom(
             "RELEVANCE",
-            "Message is too long. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False
-
-    if is_direct_reply_to_bot:
-        log_custom(
-            "RELEVANCE",
-            "Message is a direct reply to the bot. Automatically deemed relevant.",
+            "Message selected for random engagement.",
             Fore.CYAN
         )
         return True
