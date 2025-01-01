@@ -71,7 +71,15 @@ async def get_ai_response(prompt: str, context: str, system_prompt: str) -> str:
 
 async def is_message_relevant(message: discord.Message, context: str, prompt_file: str, bot_user_id: int) -> bool:
     is_direct_reply = message.reference is not None and message.reference.resolved is not None
-    is_direct_reply = is_direct_reply and message.reference.resolved.author.id == bot_user_id
+    is_direct_reply_to_bot = is_direct_reply and message.reference.resolved.author.id == bot_user_id
+
+    if is_direct_reply and not is_direct_reply_to_bot:
+        log_custom(
+            "RELEVANCE",
+            "Message is a reply to someone else. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
 
     if message.author.bot and not REPLY_TO_BOTS:
         log_custom(
@@ -105,7 +113,7 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
         )
         return False
 
-    if is_direct_reply:
+    if is_direct_reply_to_bot:
         log_custom(
             "RELEVANCE",
             "Message is a direct reply to the bot. Automatically deemed relevant.",
