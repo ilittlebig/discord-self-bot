@@ -32,9 +32,12 @@ async def process_reply_queue():
 
 async def process_message(client, message):
     try:
-        server_id = str(message.guild.id)
-        channel_id = message.channel.id
+        server_id = str(message.guild.id) if message.guild else None
+        channel_id = message.channel.id if message.channel else None
 
+        if not server_id or not channel_id:
+            log_error(f"Message guild or channel is None. Guild: {message.guild}, Channel: {message.channel}")
+            return
         if message.author == client.user and not TESTING_MODE:
             return
         if server_id not in SERVERS or channel_id not in SERVERS[server_id]["channels"]:
