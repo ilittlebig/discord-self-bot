@@ -1,5 +1,7 @@
 # Discord AI Bot
-A versatile Discord bot powered by OpenAI for intelligent, customizable, and engaging chat interactions. Tailor the bot’s behavior with flexible configuration and personality-driven prompts.
+A powerful Discord bot designed to automate your own account, making it interact like a real human in conversations. Powered by OpenAI, this bot provides intelligent, customizable, and engaging chat responses that mimic natural human behavior. Tailor its personality and behavior through flexible configuration and personality-driven prompts.
+
+> **Important Notice**: Automating your own Discord account is a violation of Discord’s Terms of Service. Proceed with caution and understand the potential risks involved.
 
 ## Features
 - **AI-Powered Responses:** Uses OpenAI’s GPT models for dynamic, human-like conversations.
