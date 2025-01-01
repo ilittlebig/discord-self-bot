@@ -12,7 +12,7 @@
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 10,
 			"history_limit": 10,
-			"min_history_message_length": 5,
+			"min_history_message_length": 0,
 			"max_history_message_length": 300
 		},
 		"1221451830299725915": {
@@ -21,7 +21,7 @@
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 10,
 			"history_limit": 10,
-			"min_history_message_length": 5,
+			"min_history_message_length": 0,
 			"max_history_message_length": 300
 		}
 	}
