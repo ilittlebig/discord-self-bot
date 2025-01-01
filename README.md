@@ -77,34 +77,34 @@ pip install -r requirements.txt
 4.	Open the config.json file and configure the bot’s behavior. Example:
     ```json
     {
-    	"model": "gpt-4o-mini",
-    	"reply_cooldown": 120,
-    	"queue_cooldown": 30,
+      "model": "gpt-4o-mini",
+      "reply_cooldown": 120,
+      "queue_cooldown": 30,
       "random_engagement": 0.3,
       "reply_instantly": false,
-    	"reply_to_bots": false,
-    	"testing_mode": false,
-    	"testing_user_ids": [204702406607372288],
-    	"servers": {
-    		"1000875859135189063": {
-    			"channels": [1000875859604934746],
-    			"exclude_user_ids": [],
-    			"prompt_file": "prompt1.txt",
-    			"context_message_count": 10,
-    			"history_limit": 10,
-    			"min_history_message_length": 5,
-    			"max_history_message_length": 300
-    		},
-    		"1221451830299725915": {
-    			"channels": [1323540450719830070],
-    			"exclude_user_ids": [],
-    			"prompt_file": "prompt1.txt",
-    			"context_message_count": 10,
-    			"history_limit": 10,
-    			"min_history_message_length": 5,
-    			"max_history_message_length": 300
-    		}
-    	}
+      "reply_to_bots": false,
+      "testing_mode": false,
+      "testing_user_ids": [204702406607372288],
+      "servers": {
+        "1000875859135189063": {
+          "channels": [1000875859604934746],
+          "exclude_user_ids": [],
+          "prompt_file": "prompt1.txt",
+          "context_message_count": 10,
+          "history_limit": 10,
+          "min_history_message_length": 5,
+          "max_history_message_length": 300
+        },
+        "1221451830299725915": {
+          "channels": [1323540450719830070],
+          "exclude_user_ids": [],
+          "prompt_file": "prompt1.txt",
+          "context_message_count": 10,
+          "history_limit": 10,
+          "min_history_message_length": 5,
+          "max_history_message_length": 300
+        }
+      }
     }
     ```
 
