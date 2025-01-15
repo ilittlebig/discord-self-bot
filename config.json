@@ -1,24 +1,24 @@
 {
 	"model": "gpt-4o-mini",
-	"reply_cooldown": 60,
+	"reply_cooldown": 30,
 	"queue_cooldown": 30,
-	"random_engagement": 0.5,
-	"reply_instantly": true,
+	"random_engagement": 0.3,
+	"reply_instantly": false,
 	"reply_to_bots": false,
 	"testing_mode": false,
 	"testing_user_ids": [204702406607372288],
 	"servers": {
-		"1000875859135189063": {
-			"channels": [1000875859604934746],
+		"219564597349318656": {
+			"channels": [627217930576199690],
 			"exclude_user_ids": [],
 			"prompt_file": "prompt1.txt",
-			"context_message_count": 10,
-			"history_limit": 10,
-			"min_history_message_length": 3,
-			"max_history_message_length": 300
+			"context_message_count": 30,
+			"history_limit": 30,
+			"min_history_message_length": 5,
+			"max_history_message_length": 200
 		},
-		"1221451830299725915": {
-			"channels": [1323540450719830070],
+		"1221451830299725915x": {
+			"channels": [1324116792729141269],
 			"exclude_user_ids": [],
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 10,

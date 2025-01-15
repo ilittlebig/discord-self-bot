@@ -47,7 +47,7 @@ def load_relevance_prompt(prompt_file: str) -> str:
         raise Exception(f"Relevance prompt file '{relevance_prompt_file}' not found. Please create it.")
 
 
-async def get_ai_response(prompt: str, context: str, system_prompt: str) -> str:
+async def get_ai_response(prompt: str, author: str, context: str, system_prompt: str) -> str:
     try:
         response = client.chat.completions.create(
             model=MODEL,
@@ -55,7 +55,7 @@ async def get_ai_response(prompt: str, context: str, system_prompt: str) -> str:
             temperature=0.7,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Conversation so far:\n{context}\n\nUser: {prompt}"},
+                {"role": "user", "content": f"Conversation so far:\n{context}\n\nUser: {prompt}\n\nYou are replying to the user: {author}"},
             ]
         )
 
@@ -74,6 +74,14 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
         and message.reference.resolved.author
         and message.reference.resolved.author.id == bot_user_id
     )
+
+    if message.content.strip().startswith('.'):
+        log_custom(
+            "RELEVANCE",
+            "Message starts with '.'. Deemed irrelevant.",
+            Fore.CYAN
+        )
+        return False
 
     if is_direct_reply:
         log_custom(
