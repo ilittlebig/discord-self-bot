@@ -7,6 +7,15 @@
 	"reply_to_bots": false,
 	"testing_mode": false,
 	"testing_user_ids": [204702406607372288],
+	"normal_reply_probability": 0.125,
+	"gif_probability": 0.1,
+	"prohibited_phrases": [
+		"join the club", "classy move", "joined the chaos",
+		"get with the times", "try again", "cute try",
+		"welcome to the madness", "cool story bro",
+		"welcome to the club", "lets ride this wave",
+		"busy being", "being awesome"
+	],
 	"servers": {
 		"219564597349318656": {
 			"channels": [627217930576199690],
@@ -26,5 +35,56 @@
 			"min_history_message_length": 3,
 			"max_history_message_length": 300
 		}
+	},
+	"gif_categories": {
+		"happy": [
+			"https://tenor.com/view/happy-snoopy-dance-gif-15887891118230405561",
+			"https://tenor.com/view/bubu-dancing-dance-happy-dance-bubu-cat-gif-9406698208260770694",
+			"https://tenor.com/view/bubu-happy-dance-sipping-tea-gif-17762605616524486928",
+			"https://tenor.com/view/emote-gif-3405712688022812089",
+			"https://tenor.com/view/andteam-andteam-ej-andteam-euijoo-andteam-ej-shocked-andteam-euijoo-shocked-gif-2747158925983183756",
+			"https://tenor.com/view/mr-bean-thumbs-up-gif-9541697652570218256",
+			"https://tenor.com/view/quby-gif-10450862751152685702"
+		],
+		"sad": [
+			"https://tenor.com/view/smile-person-akirambow-alone-sad-gif-13828138663840053205",
+			"https://tenor.com/view/last-day-of-school-gif-4872695840845483552",
+			"https://tenor.com/view/sad-girl-guilty-cute-pout-gif-3167622373553480020",
+			"https://tenor.com/view/panda-lonely-sad-pain-rain-gif-9594547216369692740",
+			"https://tenor.com/view/silent-tears-crying-sad-gif-6094673535507619605",
+			"https://tenor.com/view/sad-gif-15098807828074209921",
+			"https://tenor.com/view/doomer-doomer-core-doomer-wave-glitch-doomer-aesthetic-gif-5405068517955149891",
+			"https://tenor.com/view/struggle-paralympics-olympics-emotional-sad-gif-4346567761502047833"
+		],
+		"confused": [
+			"https://tenor.com/view/0ddroz-dark-skinned-confused-stan-twitter-shrug-gif-15135907023005618795",
+			"https://tenor.com/view/haha-lol-confused-confuzzled-eh-gif-9769601841670657604",
+			"https://tenor.com/view/saitama-one-punch-man-manga-anime-kmtnewsman-gif-11511868967346566096",
+			"https://tenor.com/view/guy-looking-around-stare-black-guy-49jesse-guy-shocked-gif-371840179519962906",
+			"https://tenor.com/view/what-the-wtf-black-guy-black-black-man-gif-12425157915486826759",
+			"https://tenor.com/view/ryan-gosling-critics-choice-awards-side-eye-confused-clapping-gif-5738790677562384038",
+			"https://tenor.com/view/tryan-tryan-gif-tryan-meme-question-mark-really-meme-gif-8442065392916683385"
+		],
+		"angry": [
+			"https://tenor.com/view/simpson-homer-simpson-scream-angry-gif-16299915098395846717",
+			"https://tenor.com/view/angry-mad-freaking-out-frustated-annoyed-gif-18379546789500421483",
+			"https://tenor.com/view/mad-angry-lunar-gif-12175068848597274228",
+			"https://tenor.com/view/cat-gif-7142831182576619574",
+			"https://tenor.com/view/alexuyutov-angry-birds-movie-gif-4672546814969648077",
+			"https://tenor.com/view/shrek-shrek-mad-mad-mad-shrek-shrek-frustrated-gif-123658272734317020",
+			"https://tenor.com/view/milk-and-mocha-bear-books-angry-not-talking-to-you-ignoring-you-gif-12413208894975981898",
+			"https://tenor.com/view/angry-fatbaby-bossbaby-youregonnapay-revenge-gif-3071211177988800734"
+		],
+		"awkward": [
+			"https://tenor.com/view/when-the-banana-sells-a-million-dollars-gif-11873212726979639512",
+			"https://tenor.com/view/the-big-smiler-doggie-gif-151138532593658709",
+			"https://tenor.com/view/lilbaby-awkward-standing-lilbabystanding-lilbabyawkard-lil-baby-gif-11749266055854233177",
+			"https://tenor.com/view/lilbaby-awkward-standing-lilbabystanding-lilbabyawkard-lil-baby-gif-24129048",
+			"https://tenor.com/view/the-simpsons-homer-exiting-uncomfortable-leaving-now-gif-6190392260901978757",
+			"https://tenor.com/view/potate-lil-potate-lil-potates-lilpotate-lilpotates-gif-15005349338646444077",
+			"https://tenor.com/view/pedro-monkey-puppet-meme-awkward-gif-7230416695831822604",
+			"https://tenor.com/view/homer-awkward-awkward-silence-what-whattt-gif-3271184098276575610",
+			"https://tenor.com/view/awkward-nodding-dan-levy-david-david-rose-schitts-creek-gif-20776317"
+		]
 	}
 }
