@@ -6,6 +6,7 @@ import time
 import asyncio
 from logger import log_error, log_info
 from discord.ext import tasks
+from action import enforce_action_cooldown
 
 GUILD_ID = "219564597349318656"
 CHANNEL_ID = "627217930576199690"
@@ -13,14 +14,14 @@ CHANNEL_ID = "627217930576199690"
 COMMAND_USAGE_FILE = "command_usage.json"
 COMMAND_PROBABILITY = 0.15
 CHILLZONE_COMMAND_COOLDOWNS = {
-    ".p": 900,
-    ".v": 900,
-    ".cc": 900,
-    ".ac": 900,
-    ".put all": 900,
-    ".work": 900,
-    ".world": 900,
-    ".fame": 900,
+    ".p": 450,
+    ".v": 450,
+    ".cc": 450,
+    ".ac": 450,
+    ".put all": 450,
+    ".work": 450,
+    ".world": 450,
+    ".fame": 450,
 }
 
 last_command_usage = None
@@ -45,7 +46,7 @@ def save_command_usage(data: dict):
         log_error(f"Error saving {COMMAND_USAGE_FILE}: {e}")
 
 
-@tasks.loop(seconds=60)
+@tasks.loop(seconds=45)
 async def periodic_chillzone_commands(client):
     global last_command_usage
     if last_command_usage is None:
@@ -74,6 +75,7 @@ async def periodic_chillzone_commands(client):
             async with channel.typing():
                 await asyncio.sleep(random.uniform(2, 4))
 
+            await enforce_action_cooldown()
             await channel.send(command)
             log_info(f"Used command: {command}")
 

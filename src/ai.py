@@ -20,6 +20,8 @@ def remove_punctuation(text: str) -> str:
 
 
 def sanitize_response(response: str) -> str:
+    if not response:
+        return None
     response = response.split("\n")[0].strip()
     response = remove_punctuation(response)
     words = response.split()
@@ -74,7 +76,6 @@ async def get_ai_response(prompt: str, author: str, context: str, system_prompt:
         log_error(f"Error during AI generation: {e}")
         return "https://tenor.com/view/dyinginside-suffering-dead-old-man-gif-22047061"
 
-
 def generate_relevance_prompt(last_bot_reply: str, user_message: str, bot_mentioned: bool) -> str:
     mention_text = "The bot was mentioned in the message." if bot_mentioned else "The bot was not mentioned in the message."
     return (
@@ -87,16 +88,63 @@ def generate_relevance_prompt(last_bot_reply: str, user_message: str, bot_mentio
     )
 
 
-async def is_response_needed(last_reply: str, user_message: str, bot_mentioned: bool) -> bool:
-    prompt = generate_relevance_prompt(last_reply, user_message, bot_mentioned)
+async def is_response_needed(
+    last_reply: str,
+    user_message: str,
+    bot_mentioned: bool,
+    display_name: str,
+    is_direct_reply: bool
+) -> bool:
+    lower_msg = user_message.lower()
+    lower_name = display_name.lower()
+
+    if is_direct_reply or bot_mentioned:
+        always_reply_keywords = [
+            "are you a bot",
+            "you're a bot",
+            "are you an npc",
+            "you're an npc"
+        ]
+
+        if any(kw in lower_msg for kw in always_reply_keywords):
+            return True
+        if lower_name in lower_msg and ("is a bot" in lower_msg or "is an npc" in lower_msg):
+            return True
+
+    direct_reply_text = "The user is replying directly to one of the bot's messages." if is_direct_reply else "The user is NOT replying directly."
+    mention_text = f"The bot was {'mentioned' if bot_mentioned else 'NOT mentioned'} in the message."
+
+    system_content = (
+        "You are an assistant deciding if a response to a user's message is necessary. "
+        "Your primary goal is to identify when the bot should reply meaningfully. "
+        "The bot's display name is '{display_name}'. Answer 'yes' if the user's message clearly requires a response. "
+        "This includes any of the following: "
+        "- The user asks a question, directly or indirectly (e.g., starts with 'can', 'what', 'why', 'how', or similar). "
+        "- The user makes a request (e.g., 'say [something]', 'tell me [something]', 'do [something]'). "
+        "- The user accuses the bot of being a bot or tests its humanity (e.g., 'are you a bot?', 'say this exact thing'). "
+        "- The user explicitly addresses or mentions the bot in a meaningful way. "
+        "Answer 'no' if the message is random, irrelevant, meaningless, or does not require a reply. "
+        "Messages should only be deemed irrelevant if they are completely random, meaningless, or do not engage with the bot."
+    )
+
+    user_content = (
+        f"The bot's last reply: {last_reply}\n"
+        f"The user's new message: {user_message}\n\n"
+        f"{direct_reply_text}\n"
+        f"{mention_text}\n\n"
+        f"Does this message require a meaningful reply? If the user's message asks about the bot being a bot, "
+        f"or if it directly mentions the bot in a question, reply with 'yes'. Otherwise, reply with 'no'.\n\n"
+        "Answer ONLY with 'yes' or 'no' — do they need a response?"
+    )
+
     try:
         response = client.chat.completions.create(
             model=MODEL,
             max_tokens=50,
             temperature=0.5,
             messages=[
-                {"role": "system", "content": "You are an assistant helping decide if a response is necessary."},
-                {"role": "user", "content": prompt},
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_content},
             ],
         )
         decision = response.choices[0].message.content.strip().lower()
@@ -111,7 +159,13 @@ async def is_response_needed(last_reply: str, user_message: str, bot_mentioned: 
         return False
 
 
-async def is_message_relevant(message: discord.Message, context: str, prompt_file: str, bot_user_id: int) -> bool:
+async def is_message_relevant(
+    message: discord.Message,
+    context: str,
+    display_name: str,
+    prompt_file: str,
+    bot_user_id: int
+) -> bool:
     is_direct_reply = (
         message.reference
         and isinstance(message.reference.resolved, discord.Message)
@@ -241,6 +295,7 @@ async def is_message_relevant(message: discord.Message, context: str, prompt_fil
     full_relevance_prompt = (
         f"Conversation so far:\n{context}\n\n"
         f"User's message: {message.content}\n\n"
+        f"The bot's display name is '{display_name}'. Are they talking to you?\n"
         f"Determine if this message is worth replying to. Respond with only 'yes' or 'no'."
     )
 
@@ -272,6 +327,7 @@ async def determine_gif_category(context: str, user_message: str, system_prompt:
         " - confused\n"
         " - angry\n"
         " - awkward\n"
+        " - flirty\n"
         " - (or any custom label you want to add)\n"
         "Only respond with exactly one category (or 'none')."
     )
@@ -280,7 +336,7 @@ async def determine_gif_category(context: str, user_message: str, system_prompt:
         f"Conversation so far:\n{context}\n\n"
         f"User's message: {user_message}\n\n"
         f"Decide if a GIF is appropriate and if so, pick the best single category.\n"
-        f"Reply ONLY with 'none' or one of the known categories (happy, sad, confused, angry, awkward)."
+        f"Reply ONLY with 'none' or one of the known categories (happy, sad, confused, angry, awkward, flirty)."
     )
 
     try:

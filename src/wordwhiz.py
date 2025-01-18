@@ -88,6 +88,8 @@ async def participate_in_wordwhiz(channel: discord.TextChannel, rule: str, keywo
         return
     log_info(f"There are {len(words)} words for this WordWhiz challenge.")
 
+    random.shuffle(words)
+
     start_time = time.time()
     initial_word_count = len(words)
 

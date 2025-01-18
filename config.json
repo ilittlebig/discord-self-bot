@@ -2,19 +2,21 @@
 	"model": "gpt-4o-mini",
 	"reply_cooldown": 30,
 	"queue_cooldown": 30,
+	"reply_batch_size": 5,
+	"max_queue_age_seconds": 60,
 	"random_engagement": 0.3,
 	"reply_instantly": false,
 	"reply_to_bots": false,
 	"testing_mode": false,
 	"testing_user_ids": [204702406607372288],
 	"normal_reply_probability": 0.125,
-	"gif_probability": 0.1,
+	"gif_probability": 0.15,
 	"prohibited_phrases": [
 		"join the club", "classy move", "joined the chaos",
 		"get with the times", "try again", "cute try",
 		"welcome to the madness", "cool story bro",
 		"welcome to the club", "lets ride this wave",
-		"busy being", "being awesome"
+		"busy being", "being awesome", "welcome to the circus"
 	],
 	"servers": {
 		"219564597349318656": {
@@ -23,7 +25,7 @@
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 30,
 			"history_limit": 30,
-			"min_history_message_length": 5,
+			"min_history_message_length": 3,
 			"max_history_message_length": 200
 		},
 		"1221451830299725915x": {
@@ -44,7 +46,15 @@
 			"https://tenor.com/view/emote-gif-3405712688022812089",
 			"https://tenor.com/view/andteam-andteam-ej-andteam-euijoo-andteam-ej-shocked-andteam-euijoo-shocked-gif-2747158925983183756",
 			"https://tenor.com/view/mr-bean-thumbs-up-gif-9541697652570218256",
-			"https://tenor.com/view/quby-gif-10450862751152685702"
+			"https://tenor.com/view/quby-gif-10450862751152685702",
+			"https://tenor.com/view/pooh-excited-time-to-eat-gif-17423387329395512780",
+			"https://tenor.com/view/excited-i'm-so-excited-so-excited-yay-happy-gif-16375819648008939887",
+			"https://tenor.com/view/nutricionista-em-blumenau-gif-3903716512369569061",
+			"https://tenor.com/view/happy-gif-27563888",
+			"https://tenor.com/view/cotton-candy-girl-kid-child-excited-gif-27094294",
+			"https://tenor.com/view/dance-dancing-yes-yesss-excited-gif-26201660",
+			"https://tenor.com/view/dog-cute-dog-happy-dog-funny-dog-happy-gif-17984067533174306076",
+			"https://tenor.com/view/golden-retriever-dog-puppy-gif-26065361"
 		],
 		"sad": [
 			"https://tenor.com/view/smile-person-akirambow-alone-sad-gif-13828138663840053205",
@@ -63,7 +73,17 @@
 			"https://tenor.com/view/guy-looking-around-stare-black-guy-49jesse-guy-shocked-gif-371840179519962906",
 			"https://tenor.com/view/what-the-wtf-black-guy-black-black-man-gif-12425157915486826759",
 			"https://tenor.com/view/ryan-gosling-critics-choice-awards-side-eye-confused-clapping-gif-5738790677562384038",
-			"https://tenor.com/view/tryan-tryan-gif-tryan-meme-question-mark-really-meme-gif-8442065392916683385"
+			"https://tenor.com/view/tryan-tryan-gif-tryan-meme-question-mark-really-meme-gif-8442065392916683385",
+			"https://tenor.com/view/the-rock-sus-the-rock-meme-the-rock-sus-meme-gif-23972805",
+			"https://tenor.com/view/the-rock-look-the-rock-meme-the-rock-sus-meme-gif-26414001",
+			"https://tenor.com/view/joelana-joe-cto-yellow-guy-yellow-boi-yellowboi-gif-13739883806365791886",
+			"https://tenor.com/view/huhh-what-gif-26947504",
+			"https://tenor.com/view/huh-cat-huh-funny-cat-cute-gif-3799404593284528017",
+			"https://tenor.com/view/the-treacle-people-treacle-people-treacle-puppet-stop-motion-gif-9271880661405123672",
+			"https://tenor.com/view/kiss-gif-8615365348820385795",
+			"https://tenor.com/view/black-boy-elevator-confused-perplexed-concerned-gif-9645339648940675276",
+			"https://tenor.com/view/calculating-puzzled-math-confused-confused-look-gif-14677181",
+			"https://tenor.com/view/joe-biden-presidential-debate-huh-confused-gif-9508832355999336631"
 		],
 		"angry": [
 			"https://tenor.com/view/simpson-homer-simpson-scream-angry-gif-16299915098395846717",
@@ -85,6 +105,18 @@
 			"https://tenor.com/view/pedro-monkey-puppet-meme-awkward-gif-7230416695831822604",
 			"https://tenor.com/view/homer-awkward-awkward-silence-what-whattt-gif-3271184098276575610",
 			"https://tenor.com/view/awkward-nodding-dan-levy-david-david-rose-schitts-creek-gif-20776317"
+		],
+		"flirty": [
+			"https://tenor.com/view/flirty-gif-14229120460921105508",
+			"https://tenor.com/view/coco-jones-flirt-flirting-wink-grr-gif-9799497798468969789",
+			"https://tenor.com/view/alexa-bliss-alexa-wwe-divabible-alexa-hey-gif-16649196",
+			"https://tenor.com/view/wink-eye-wink-flirty-wink-wink-gif-6756953271583284470",
+			"https://tenor.com/view/flirt-gif-27066319",
+			"https://tenor.com/view/bubu-dudu-sseeyall-gif-15858526400693831784",
+			"https://tenor.com/view/dudu-kissing-bubu-hearts-i-love-you-i-miss-you-dudu-gif-7350208909158435592",
+			"https://tenor.com/view/stare-pretty-shot-eating-smile-gif-16919067",
+			"https://tenor.com/view/seductive-flirty-flirt-seduce-bedtime-gif-16365741",
+			"https://tenor.com/view/happy-thursday-gif-5979605012079289742"
 		]
 	}
 }

@@ -24,11 +24,21 @@ from chillzone import is_processing_blocked
 from config import (
     SERVERS, TESTING_MODE, TESTING_USER_IDS, PROHIBITED_PHRASES,
     REPLY_COOLDOWN, QUEUE_COOLDOWN, REPLY_INSTANTLY, NORMAL_REPLY_PROBABILITY,
-    GIF_PROBABILITY, GIF_CATEGORIES
+    GIF_PROBABILITY, GIF_CATEGORIES, MAX_QUEUE_AGE_SECONDS, REPLY_BATCH_SIZE,
 )
 
 reply_queue = deque()
 last_replied_time = {}
+
+def is_direct_reply_to_bot(message: discord.Message, bot_id: int) -> bool:
+    if not message.reference:
+        return False
+
+    referenced_msg = message.reference.resolved
+    if not isinstance(referenced_msg, discord.Message):
+        return False
+    return referenced_msg.author.id == bot_id
+
 
 def pick_gif_for_category(category: str) -> str:
     if category not in GIF_CATEGORIES:
@@ -37,6 +47,9 @@ def pick_gif_for_category(category: str) -> str:
 
 
 def filter_response(reply: str) -> str:
+    if not reply:
+        return None
+
     for phrase in PROHIBITED_PHRASES:
         if phrase in reply.lower():
             log_info(f"Blocked prohibited phrase: {phrase}")
@@ -55,13 +68,25 @@ async def process_reply_queue():
     else:
         process_reply_queue.change_interval(seconds=QUEUE_COOLDOWN)
 
-    if reply_queue:
-        message, context_str, system_prompt = reply_queue.popleft()
+    for i in range(REPLY_BATCH_SIZE):
+        if not reply_queue:
+            return
+
+        timestamp, message, context_str, system_prompt = reply_queue.popleft()
+        if time.time() - timestamp > MAX_QUEUE_AGE_SECONDS:
+            log_info(f"Skipping old message from queue (>{MAX_QUEUE_AGE_SECONDS}s).")
+            continue
+
         try:
             await handle_reply(message, context_str, system_prompt)
             last_replied_time[message.channel.id] = asyncio.get_event_loop().time()
         except Exception as e:
             log_error(f"Error processing queued reply: {e}")
+
+        if i < REPLY_BATCH_SIZE - 1 and reply_queue:
+            delay = random.uniform(3, 7)
+            log_info(f"Waiting {delay} seconds before processing the next message.")
+            await asyncio.sleep(delay)
 
 
 async def process_message(client, message):
@@ -82,6 +107,8 @@ async def process_message(client, message):
         min_history_message_length = server_config["min_history_message_length"]
         max_history_message_length = server_config["max_history_message_length"]
 
+        display_name = message.guild.me.display_name
+
         if len(message.content) > max_history_message_length:
             log_warning(f"Message from {message.author.name} exceeds max history length ({max_history_message_length} chars). Skipping...")
             return
@@ -99,7 +126,13 @@ async def process_message(client, message):
             return
 
         context_str = get_conversation_context(server_id, channel_id, max_messages=context_message_count)
-        should_reply, random_engagement_selected = await is_message_relevant(message, context_str, prompt_file, client.user.id)
+        should_reply, random_engagement_selected = await is_message_relevant(
+            message,
+            context_str,
+            display_name,
+            prompt_file,
+            client.user.id
+        )
 
         if not should_reply:
             log_info("Message deemed irrelevant by AI. Skipping reply.")
@@ -113,7 +146,16 @@ async def process_message(client, message):
 
         if not random_engagement_selected:
             bot_mentioned = client.user in message.mentions
-            response_needed = await is_response_needed(last_reply, message.content, bot_mentioned)
+            is_direct_reply = is_direct_reply_to_bot(message, client.user.id)
+
+            response_needed = await is_response_needed(
+                last_reply,
+                message.content,
+                bot_mentioned,
+                display_name,
+                is_direct_reply
+            )
+
             if not response_needed:
                 return
         else:
@@ -122,7 +164,7 @@ async def process_message(client, message):
         now = asyncio.get_event_loop().time()
         if channel_id in last_replied_time and now - last_replied_time[channel_id] < REPLY_COOLDOWN:
             log_info("Cooldown active. Queuing the message for later reply.", True)
-            reply_queue.append((message, context_str, system_prompt))
+            reply_queue.append((time.time(), message, context_str, system_prompt))
             return
 
         await handle_reply(message, context_str, system_prompt)
@@ -132,7 +174,6 @@ async def process_message(client, message):
 
 
 async def handle_reply(message, context_str, system_prompt):
-    await enforce_action_cooldown()
     reply = None
 
     if random.random() < GIF_PROBABILITY:
@@ -160,7 +201,13 @@ async def handle_reply(message, context_str, system_prompt):
         log_info(f"Waiting {delay:.1f} seconds before responding.")
         async with message.channel.typing():
             await asyncio.sleep(delay)
+        log_info("Finished delay, proceeding to send reply.")
 
+    if is_processing_blocked():
+        log_info("Processing is blocked. Not sending handled reply.")
+        return
+
+    await enforce_action_cooldown()
     await send_method(reply)
     log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
 
