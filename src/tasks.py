@@ -13,7 +13,7 @@ from discord.ext import tasks
 from action import enforce_action_cooldown
 from ai import (
     get_ai_response, load_prompt, is_message_relevant, is_response_needed,
-    determine_gif_category
+    determine_gif_category, categorize_message
 )
 from logger import log_info, log_warning, log_error, log_success, log_custom
 from conversation import (
@@ -60,24 +60,41 @@ def filter_response(reply: str) -> str:
 @tasks.loop(seconds=QUEUE_COOLDOWN)
 async def process_reply_queue():
     if is_processing_blocked():
+        log_warning("Processing is currently blocked.")
         return
 
     queue_size = len(reply_queue)
+    log_info(f"Queue size: {queue_size}")
+
     if queue_size > 10:
         process_reply_queue.change_interval(seconds=max(QUEUE_COOLDOWN // 2, 1))
     else:
         process_reply_queue.change_interval(seconds=QUEUE_COOLDOWN)
 
+    sorted_queue = sorted(reply_queue, key=lambda item: (item["category"], item["timestamp"]), reverse=True)
     for i in range(REPLY_BATCH_SIZE):
-        if not reply_queue:
+        if not sorted_queue:
+            log_info("Reply queue is empty.")
             return
 
-        timestamp, message, context_str, system_prompt = reply_queue.popleft()
-        if time.time() - timestamp > MAX_QUEUE_AGE_SECONDS:
-            log_info(f"Skipping old message from queue (>{MAX_QUEUE_AGE_SECONDS}s).")
+        next_item = sorted_queue.pop(0)
+        if next_item in reply_queue:
+            reply_queue.remove(next_item)
+
+        timestamp, message, context_str, system_prompt, category = (
+            next_item["timestamp"],
+            next_item["message"],
+            next_item["context_str"],
+            next_item["system_prompt"],
+            next_item["category"],
+        )
+
+        if time.time() - timestamp > MAX_QUEUE_AGE_SECONDS and category != "critical":
+            log_warning(f"Skipping old non-critical message: {message.content[:30]}")
             continue
 
         try:
+            log_info(f"Processing {category} priority message: {message.content[:50]}")
             await handle_reply(message, context_str, system_prompt)
             last_replied_time[message.channel.id] = asyncio.get_event_loop().time()
         except Exception as e:
@@ -108,6 +125,10 @@ async def process_message(client, message):
         max_history_message_length = server_config["max_history_message_length"]
 
         display_name = message.guild.me.display_name
+
+        if message.author.id in exclude_user_ids:
+            log_info(f"Message from excluded user {message.author.name} ({message.author.id}) ignored.")
+            return
 
         if len(message.content) > max_history_message_length:
             log_warning(f"Message from {message.author.name} exceeds max history length ({max_history_message_length} chars). Skipping...")
@@ -164,7 +185,13 @@ async def process_message(client, message):
         now = asyncio.get_event_loop().time()
         if channel_id in last_replied_time and now - last_replied_time[channel_id] < REPLY_COOLDOWN:
             log_info("Cooldown active. Queuing the message for later reply.", True)
-            reply_queue.append((time.time(), message, context_str, system_prompt))
+            reply_queue.append({
+                "timestamp": time.time(),
+                "message": message,
+                "context_str": context_str,
+                "system_prompt": system_prompt,
+                "category": await categorize_message(message),
+            })
             return
 
         await handle_reply(message, context_str, system_prompt)
@@ -184,6 +211,10 @@ async def handle_reply(message, context_str, system_prompt):
     else:
         reply = await get_ai_response(message.content, message.author, context_str, system_prompt)
         log_success(f"Generated AI reply: {reply}", True)
+
+    if not reply:
+        log_warning("No reply generated.")
+        return
 
     filtered_reply = filter_response(reply)
     if not filtered_reply:
@@ -208,7 +239,7 @@ async def handle_reply(message, context_str, system_prompt):
         return
 
     await enforce_action_cooldown()
-    await send_method(reply)
+    await asyncio.wait_for(send_method(reply), timeout=15)
     log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
 
     server_id = str(message.guild.id) if message.guild else None

@@ -8,7 +8,7 @@ from tasks import process_reply_queue, process_message
 from config import DISCORD_BOT_TOKEN, REPLY_INSTANTLY
 from chillzone import process_chillzone_message, is_processing_blocked
 from commands import periodic_chillzone_commands
-from logger import log_error
+from logger import log_error, log_info
 from config import SERVERS
 
 client = discord.Client()
@@ -27,11 +27,22 @@ def is_valid_server_and_channel(message: discord.Message) -> bool:
 
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}!")
-    if REPLY_INSTANTLY:
-        process_reply_queue.change_interval(seconds=0)
-    process_reply_queue.start()
-    periodic_chillzone_commands.start(client)
+    log_info(f"Logged in as {client.user}!")
+    try:
+        if REPLY_INSTANTLY:
+            process_reply_queue.change_interval(seconds=0)
+
+        if process_reply_queue.is_running():
+            process_reply_queue.cancel()
+            log_info("Canceled existing process_reply_queue task.")
+        process_reply_queue.start()
+
+        if periodic_chillzone_commands.is_running():
+            periodic_chillzone_commands.cancel()
+            log_info("Canceled existing periodic_chillzone_commands task.")
+        periodic_chillzone_commands.start(client)
+    except Exception as e:
+        log_error(f"Error in on_ready: {e}")
 
 
 @client.event
@@ -41,7 +52,7 @@ async def on_message(message):
     if not is_valid_server_and_channel(message):
         return
 
-    await process_chillzone_message(message)
+    await process_chillzone_message(client, message)
     await process_message(client, message)
 
 

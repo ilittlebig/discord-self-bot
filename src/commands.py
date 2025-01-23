@@ -22,6 +22,7 @@ CHILLZONE_COMMAND_COOLDOWNS = {
     ".work": 450,
     ".world": 450,
     ".fame": 450,
+    ".gen1": 450,
 }
 
 last_command_usage = None

@@ -2,3 +2,4 @@
 .env
 src/__pycache__/
 .DS_Store
+command_usage.json

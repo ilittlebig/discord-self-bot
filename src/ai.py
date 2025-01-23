@@ -57,15 +57,68 @@ def load_relevance_prompt(prompt_file: str) -> str:
         raise Exception(f"Relevance prompt file '{relevance_prompt_file}' not found. Please create it.")
 
 
-async def get_ai_response(prompt: str, author: str, context: str, system_prompt: str) -> str:
+async def categorize_message(message):
+    try:
+        prompt = (
+            "You are a message categorization assistant. "
+            "Analyze the following message and categorize it as one of these: "
+            "'critical' (if it accuses the bot of being fake, a bot, an AI, or NPC), "
+            "'normal' (if it's general conversation). "
+            "Provide only the category name as output.\n\n"
+            f"Message: {message.content}"
+        )
+
+        response = await get_categorization_response(prompt)
+        category = response.lower().strip()
+
+        if category not in {"critical", "normal"}:
+            log_warning(f"AI returned an invalid category: {category}. Defaulting to 'normal'.")
+            return "normal"
+
+        log_info(f"AI categorized message '{message.content[:30]}...' as {category}.")
+        return category
+    except Exception as e:
+        log_error(f"Error in AI categorization: {e}")
+        return "normal"
+
+
+async def get_categorization_response(prompt: str) -> str:
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            max_tokens=50,
+            max_tokens=10,
             temperature=0.7,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        reply = response.choices[0].message.content.strip()
+        return reply
+    except Exception as e:
+        log_error(f"Error during AI categorization: {e}")
+        return "normal"
+
+
+async def get_ai_response(prompt: str, author: str, context: str, system_prompt: str) -> str:
+    try:
+        content_prompt = (
+            "Conversation so far:\n"
+            f"{context}\n\n"
+            "These messages represent authentic human interactions. "
+            "Match the phrasing of these messages to blend naturally into the conversation.\n\n"
+            f"User: {prompt}\n\n"
+            f"You are replying to the user: {author}\n\n"
+            "FINAL REMINDER: You NEVER capitalize words randomly in the middle of sentences. "
+            "Capitalize only proper nouns or the first word of a sentence. "
+            "Any deviation from this will be considered invalid."
+        )
+
+        response = client.chat.completions.create(
+            model=MODEL,
+            max_tokens=50,
+            temperature=0.9,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Conversation so far:\n{context}\n\nUser: {prompt}\n\nYou are replying to the user: {author}"},
+                {"role": "user", "content": content_prompt},
             ]
         )
 

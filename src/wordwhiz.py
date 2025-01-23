@@ -79,29 +79,49 @@ async def participate_in_wordwhiz(channel: discord.TextChannel, rule: str, keywo
     wordwhiz_active = True
     wordwhiz_cooldown_end = time.time() + WORDWHIZ_COOLDOWN_DURATION
 
-    log_info("Participating in WordWhiz challenge.")
+    try:
+        log_info("Starting WordWhiz challenge.")
+        words = generate_wordwhiz_words(rule, keyword)
+        if not words:
+            log_warning("No valid words found for WordWhiz challenge.")
+            return
 
-    words = generate_wordwhiz_words(rule, keyword)
-    if not words:
-        log_warning("No words for this WordWhiz challenge.")
+        log_info(f"Found {len(words)} words for the challenge.")
+        random.shuffle(words)
+
+        start_time = time.time()
+        max_duration = WORDWHIZ_TIMER
+
+        for word in words:
+            if time.time() - start_time >= max_duration:
+                log_info("WordWhiz timer expired.")
+                break
+
+            try:
+                log_info(f"Attempting to send word: {word}")
+                try:
+                    duration = random.uniform(0.5, 2)
+                    await asyncio.wait_for(perform_typing(channel, duration), timeout=5.0)
+                except asyncio.TimeoutError:
+                    log_warning("Typing indicator timed out.")
+                log_info("Attempting to send the message...")
+                await asyncio.wait_for(channel.send(word), timeout=5)
+                log_info(f"Successfully sent word: {word}")
+            except asyncio.TimeoutError:
+                log_warning(f"Timeout while sending word: {word}")
+                continue
+            except Exception as e:
+                log_error(f"Unexpected error while sending word '{word}': {e}")
+                continue
+
+        log_info("WordWhiz challenge completed.")
+    except Exception as e:
+        log_error(f"Error during WordWhiz challenge: {e}")
+    finally:
         wordwhiz_active = False
-        return
-    log_info(f"There are {len(words)} words for this WordWhiz challenge.")
+        log_info("WordWhiz state reset.")
 
-    random.shuffle(words)
 
-    start_time = time.time()
-    initial_word_count = len(words)
-
-    await asyncio.sleep(2)
-    while time.time() - start_time < WORDWHIZ_TIMER and words:
-        word = words.pop(0)
-        async with channel.typing():
-            await asyncio.sleep(random.uniform(0.75, 2))
-        await channel.send(word)
-
-    if initial_word_count > 0 and not words:
-        log_info("Ran out of words during the WordWhiz challenge.")
-
-    wordwhiz_active = False
-    log_info("WordWhiz challenge is over.")
+async def perform_typing(channel: discord.TextChannel, duration: float):
+    async with channel.typing():
+        await asyncio.sleep(duration)

@@ -16,15 +16,15 @@
 		"get with the times", "try again", "cute try",
 		"welcome to the madness", "cool story bro",
 		"welcome to the club", "lets ride this wave",
-		"busy being", "being awesome", "welcome to the circus"
+		"being awesome", "welcome to the circus"
 	],
 	"servers": {
 		"219564597349318656": {
 			"channels": [627217930576199690],
-			"exclude_user_ids": [],
+			"exclude_user_ids": [274178934143451137],
 			"prompt_file": "prompt1.txt",
-			"context_message_count": 30,
-			"history_limit": 30,
+			"context_message_count": 50,
+			"history_limit": 50,
 			"min_history_message_length": 3,
 			"max_history_message_length": 200
 		},
@@ -64,7 +64,8 @@
 			"https://tenor.com/view/silent-tears-crying-sad-gif-6094673535507619605",
 			"https://tenor.com/view/sad-gif-15098807828074209921",
 			"https://tenor.com/view/doomer-doomer-core-doomer-wave-glitch-doomer-aesthetic-gif-5405068517955149891",
-			"https://tenor.com/view/struggle-paralympics-olympics-emotional-sad-gif-4346567761502047833"
+			"https://tenor.com/view/struggle-paralympics-olympics-emotional-sad-gif-4346567761502047833",
+			"https://tenor.com/view/sad-face-missing-gary-lonely-tears-spongebob-gif-14460070"
 		],
 		"confused": [
 			"https://tenor.com/view/0ddroz-dark-skinned-confused-stan-twitter-shrug-gif-15135907023005618795",

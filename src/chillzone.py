@@ -8,7 +8,7 @@ import re
 import random
 import asyncio
 import time
-from logger import log_info
+from logger import log_info, log_error
 from action import enforce_action_cooldown
 from wordwhiz import (
     is_wordwhiz_active,
@@ -18,11 +18,13 @@ from wordwhiz import (
 )
 
 SKIP_WELCOME_MESSAGE_PROB = 0.25
+REPUTATION_COMMAND_COOLDOWN = 20
 
 WELCOME_MESSAGE_DEBOUNCE = 10
 WELCOME_MESSAGE = "### <:cz_bot_love:880661730961805322> WELCOME TO CHILLZONE. HAVE SO SO SO MUCH FUN!!! <:cz_bot_love:880661730961805322>"
 
 last_welcome_time = {}
+last_reputation_command_time = 0
 
 def is_processing_blocked():
     return is_wordwhiz_active()
@@ -93,13 +95,59 @@ async def handle_wordwhiz(message: discord.Message):
     return True
 
 
-async def process_chillzone_message(message: discord.Message):
+async def handle_chillzone_command(client, message: discord.Message):
+    global last_reputation_command_time
+
+    content = message.content.lower()
+    if not content.startswith((".neg", ".boost")):
+        return
+
+    bot_mentioned = client.user in message.mentions
+    is_reply_to_bot = (
+        message.reference and
+        isinstance(message.reference.resolved, discord.Message) and
+        message.reference.resolved.author.id == client.user.id
+    )
+
+    if not bot_mentioned and not is_reply_to_bot:
+        return
+
+    now = time.time()
+    if now - last_reputation_command_time < REPUTATION_COMMAND_COOLDOWN:
+        log_info(f"Ignoring '.{content.split()[0]}' due to cooldown.")
+        return
+
+    command_match = re.match(r"\.(neg|boost)", content)
+    if not command_match:
+        return
+
+    command = command_match.group(1)
+    if command == "neg":
+        response = f"uuugh"
+    elif command == "boost":
+        response = f"nuh uh, neg me"
+
+    log_info(f"Bot was '.{command}'. Replying with: '{response}'")
+    last_reputation_command_time = now
+
+    await enforce_action_cooldown()
+    await asyncio.sleep(random.uniform(2, 3))
+    await message.reply(response)
+
+
+async def process_chillzone_message(client, message: discord.Message):
+    if await handle_chillzone_command(client, message):
+        return
+
     if not message.author.bot:
         return
 
-    if await handle_point_drop(message):
-        return
-    if await handle_welcome_message(message):
-        return
-    if await handle_wordwhiz(message):
-        return
+    try:
+        if await handle_point_drop(message):
+            return
+        if await handle_welcome_message(message):
+            return
+        if await handle_wordwhiz(message):
+            return
+    except Exception as e:
+        log_error(f"Error in chillzone processing: {e}")
