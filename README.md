@@ -9,6 +9,8 @@ A powerful Discord bot designed to automate your own account, making it interact
 - **Easy Setup**: Quick installation and straightforward configuration.
 - **Context-Aware Replies**: Replies are based on recent conversation history.
 - **Modular and Scalable**: Extend functionality easily or adapt it for specific use cases.
+  
+> **Note**: The bot is currently optimized for the `ChillZone` Discord server, including participation in its word challenges and other server-specific activities. If you’d like to adapt the bot for use in other servers, you can easily disable the `ChillZone`-specific functionality by commenting out the relevant code in `discord_bot.py`. This ensures the bot will function seamlessly across any server environment.
 
 ## Setup Instructions
 Follow these steps to set up and run the Discord bot:
