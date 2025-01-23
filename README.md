@@ -80,11 +80,16 @@ pip install -r requirements.txt
       "model": "gpt-4o-mini",
       "reply_cooldown": 120,
       "queue_cooldown": 30,
+      "reply_batch_size": 5,
+      "max_queue_age_seconds": 60,
       "random_engagement": 0.3,
       "reply_instantly": false,
       "reply_to_bots": false,
       "testing_mode": false,
       "testing_user_ids": [204702406607372288],
+      "normal_reply_probability": 0.125,
+      "gif_probability": 0.15,
+      "prohibited_phrases": [],
       "servers": {
         "1000875859135189063": {
           "channels": [1000875859604934746],
@@ -104,6 +109,26 @@ pip install -r requirements.txt
           "min_history_message_length": 5,
           "max_history_message_length": 300
         }
+      },
+      "gif_categories": {
+        "happy": [
+          "https://tenor.com/view/happy-dance-gif-15887891118230405561"
+        ],
+        "sad": [
+          "https://tenor.com/view/sad-tears-gif-6094673535507619605"
+        ],
+        "confused": [
+          "https://tenor.com/view/confused-cat-gif-3799404593284528017"
+        ],
+        "angry": [
+          "https://tenor.com/view/angry-homer-simpson-gif-16299915098395846717"
+        ],
+        "awkward": [
+          "https://tenor.com/view/awkward-silence-homer-gif-3271184098276575610"
+        ],
+        "flirty": [
+          "https://tenor.com/view/wink-flirty-gif-6756953271583284470"
+        ]
       }
     }
     ```
@@ -174,7 +199,7 @@ pip install -r requirements.txt
     
     If unsure, consider whether the reply would keep the conversation engaging. Respond with only 'yes' or 'no'.
    ```
-
+   > **Note**: The relevance files has to be named `[prompt_file_name]_relevance_prompt.txt`
 8. Run the Bot
     ```
     python main.py
@@ -184,6 +209,11 @@ pip install -r requirements.txt
 - **Model**: Specify the OpenAI model (e.g., "gpt-4o-mini").
 - **reply_cooldown**: Minimum time (in seconds) between replies in the same channel.
 - **random_engagement**: Defines how often the bot responds to irrelevant messages randomly.
+- **reply_batch_size**: Specifies the number of messages processed in a single batch. Helps manage response processing for higher efficiency.
+- **max_queue_age_seconds**: Defines the maximum age (in seconds) a message can remain in the queue before being discarded. Ensures stale messages do not trigger responses.
+- **normal_reply_probability**: Sets the probability (between 0 and 1) for the bot to send a normal text reply. Helps balance engagement frequency.
+- **gif_probability**: Determines the likelihood (between 0 and 1) of the bot replying with a GIF instead of text. Useful for adding variety and fun to interactions.
+- **gif_categories**: Contains categorized lists of GIF URLs for specific emotional contexts like “happy,” “sad,” “confused,” etc., allowing tailored GIF replies based on the conversation tone.
 - **reply_instantly**: Makes the bot reply to relevant messages immediately when enabled.
 - **queue_cooldown**: Time interval (in seconds) to process the reply queue.
 - **context_message_count**: Number of previous messages to include in AI context (can be set per server).
