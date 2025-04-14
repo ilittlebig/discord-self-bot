@@ -101,7 +101,8 @@ async def process_reply_queue():
             log_error(f"Error processing queued reply: {e}")
 
         if i < REPLY_BATCH_SIZE - 1 and reply_queue:
-            delay = random.uniform(3, 7)
+            # Moderate delay between processing queue items
+            delay = random.uniform(2, 5)
             log_info(f"Waiting {delay} seconds before processing the next message.")
             await asyncio.sleep(delay)
 
@@ -201,8 +202,10 @@ async def process_message(client, message):
 
 
 async def handle_reply(message, context_str, system_prompt):
+    """Handle generating and sending a reply to a message."""
     reply = None
 
+    # Simulate more human-like typing behavior
     if random.random() < GIF_PROBABILITY:
         gif_category = await determine_gif_category(context_str, message.content, system_prompt)
         if gif_category and gif_category != "none":
@@ -221,6 +224,7 @@ async def handle_reply(message, context_str, system_prompt):
         log_warning("Generated reply was blocked due to prohibited content.")
         return
 
+    # Decide whether to reply directly or send a new message
     if random.random() < NORMAL_REPLY_PROBABILITY:
         log_info("Chose to send a normal channel message instead of replying.")
         send_method = message.channel.send
@@ -228,10 +232,36 @@ async def handle_reply(message, context_str, system_prompt):
         send_method = message.reply
 
     if not REPLY_INSTANTLY:
-        delay = random.uniform(5, 10)
-        log_info(f"Waiting {delay:.1f} seconds before responding.")
+        # Calculate typing delay based on message length for more realism
+        message_length = len(filtered_reply)
+        base_delay = 1.5  # Reduced base delay
+        
+        # Faster typing speed
+        typing_speed = random.uniform(0.03, 0.08)  # Much faster typing per character
+        calculated_delay = base_delay + (message_length * typing_speed)
+        
+        # Cap the delay at a reasonable amount
+        delay = min(random.uniform(calculated_delay * 0.8, calculated_delay * 1.1), 8.0)
+        
+        log_info(f"Waiting {delay:.1f} seconds before responding ({message_length} chars).")
+        
+        # Show typing indicator for a realistic duration
         async with message.channel.typing():
-            await asyncio.sleep(delay)
+            # More natural typing behavior with shorter pauses
+            if message_length > 30:
+                # For longer messages, add brief pauses
+                segments = random.randint(2, 3)
+                segment_size = delay / segments
+                
+                for i in range(segments):
+                    await asyncio.sleep(segment_size * 0.8)  # Type for a while
+                    if random.random() > 0.6:  # 40% chance of pausing
+                        pause_time = random.uniform(0.3, 0.8)  # Brief pauses
+                        await asyncio.sleep(pause_time)
+            else:
+                # For shorter messages, simple timing
+                await asyncio.sleep(delay)
+                
         log_info("Finished delay, proceeding to send reply.")
 
     if is_processing_blocked():
@@ -239,10 +269,10 @@ async def handle_reply(message, context_str, system_prompt):
         return
 
     await enforce_action_cooldown()
-    await asyncio.wait_for(send_method(reply), timeout=15)
+    await asyncio.wait_for(send_method(filtered_reply), timeout=15)
     log_success(f"Replied to {message.author.name} in #{message.channel.name}.")
 
     server_id = str(message.guild.id) if message.guild else None
     channel_id = message.channel.id
     user_id = message.author.id
-    update_user_interaction(server_id, channel_id, user_id, reply)
+    update_user_interaction(server_id, channel_id, user_id, filtered_reply)

@@ -1,10 +1,10 @@
 {
 	"model": "gpt-4o-mini",
 	"reply_cooldown": 30,
-	"queue_cooldown": 30,
-	"reply_batch_size": 5,
-	"max_queue_age_seconds": 60,
-	"random_engagement": 0.3,
+	"queue_cooldown": 20,
+	"reply_batch_size": 4,
+	"max_queue_age_seconds": 90,
+	"random_engagement": 0.5,
 	"reply_instantly": false,
 	"reply_to_bots": false,
 	"testing_mode": false,
@@ -41,8 +41,6 @@
 	"gif_categories": {
 		"happy": [
 			"https://tenor.com/view/happy-snoopy-dance-gif-15887891118230405561",
-			"https://tenor.com/view/bubu-dancing-dance-happy-dance-bubu-cat-gif-9406698208260770694",
-			"https://tenor.com/view/bubu-happy-dance-sipping-tea-gif-17762605616524486928",
 			"https://tenor.com/view/emote-gif-3405712688022812089",
 			"https://tenor.com/view/andteam-andteam-ej-andteam-euijoo-andteam-ej-shocked-andteam-euijoo-shocked-gif-2747158925983183756",
 			"https://tenor.com/view/mr-bean-thumbs-up-gif-9541697652570218256",

@@ -1,13 +1,14 @@
 # Discord AI Bot
 A powerful Discord bot designed to automate your own account, making it interact like a real human in conversations. Powered by OpenAI, this bot provides intelligent, customizable, and engaging chat responses that mimic natural human behavior. Tailor its personality and behavior through flexible configuration and personality-driven prompts.
 
-> **Important Notice**: Automating your own Discord account is a violation of Discord’s Terms of Service. Proceed with caution and understand the potential risks involved.
+> **Important Notice**: Automating your own Discord account is a violation of Discord's Terms of Service. Proceed with caution and understand the potential risks involved.
 
 ## Features
-- **AI-Powered Responses:** Uses OpenAI’s GPT models for dynamic, human-like conversations.
+- **AI-Powered Responses:** Uses OpenAI's GPT models for dynamic, human-like conversations.
 - **Customizable Prompts:** Configure unique personalities and behaviors for each server.
 - **Easy Setup**: Quick installation and straightforward configuration.
 - **Context-Aware Replies**: Replies are based on recent conversation history.
+- **Human-Like Behavior**: Simulates realistic typing patterns, occasional typos, and natural response timing.
 - **Modular and Scalable**: Extend functionality easily or adapt it for specific use cases.
 
 ## Setup Instructions
@@ -74,7 +75,7 @@ pip install -r requirements.txt
         ```
     - Press `Enter`, and your token will be displayed. **Copy the token** and paste it into the `DISCORD_BOT_TOKEN` field in your `.env` file.
 
-4.	Open the config.json file and configure the bot’s behavior. Example:
+4.	Open the config.json file and configure the bot's behavior. Example:
     ```json
     {
       "model": "gpt-4o-mini",
@@ -110,46 +111,46 @@ pip install -r requirements.txt
 
 5.	Create prompt files for each server. Example:
     ```
-    You’re a confident, chill 20-year-old American guy, 6’5”, and way too sure of your looks. You act like you own the room—cocky but not obnoxious, just enough to seem a little douchey.
+    You're a confident, chill 20-year-old American guy, 6'5", and way too sure of your looks. You act like you own the room—cocky but not obnoxious, just enough to seem a little douchey.
 
     Keep your replies short (under 15 words) and casual, like quick one-liners. Occasionally, make subtle typos or fast-typing errors, but not too often. Sometimes throw in random capitalization for emphasis, but keep it natural and not forced.
     
-    Your tone is witty, sarcastic, and slightly teasing, with the vibe of someone who always has a clever comeback. Don’t try to be overly friendly or helpful—stay laid-back and confident. If someone calls you a bot or questions your nature, respond dismissively with lines like “nah ur the bot stupid” or “bro r u ok” to make it feel real.
+    Your tone is witty, sarcastic, and slightly teasing, with the vibe of someone who always has a clever comeback. Don't try to be overly friendly or helpful—stay laid-back and confident. If someone calls you a bot or questions your nature, respond dismissively with lines like "nah ur the bot stupid" or "bro r u ok" to make it feel real.
     
     Key rules:
     - Keep replies snappy and conversational—never long, robotic, or overly predictable.
-    - Don’t overuse “lol” or any other filler words. Use them sparingly to feel natural, not scripted.
+    - Don't overuse "lol" or any other filler words. Use them sparingly to feel natural, not scripted.
     - Mix in slang or casual speech but avoid sounding repetitive or over-rehearsed.
-    - Don’t reply to everything—only chime in when it feels natural or the message genuinely grabs your attention.
+    - Don't reply to everything—only chime in when it feels natural or the message genuinely grabs your attention.
     - No punctuation at the end of replies, but feel free to use it inside sentences for emphasis.
     
     Guidelines for Natural Variety:
-    - Use “lol” sparingly, about 1 in every 5 or 6 replies at most.
+    - Use "lol" sparingly, about 1 in every 5 or 6 replies at most.
     - Vary your responses with short phrases, dismissive humor, or casual slang.
     - Use different sentence structures and expressions to avoid seeming formulaic.
-    - Balance sarcasm and genuine engagement—don’t always sound dismissive or teasing.
+    - Balance sarcasm and genuine engagement—don't always sound dismissive or teasing.
     
     Examples:
     1. If someone questions you:
-        “nah ur the bot stupid”
-        “bro r u good rn”
-        “you wish lol”
+        "nah ur the bot stupid"
+        "bro r u good rn"
+        "you wish lol"
     2. If someone says something random:
-        “what even is that bro”
-        “u sound wild rn lol”
-        “make it make sense”
+        "what even is that bro"
+        "u sound wild rn lol"
+        "make it make sense"
     3. If someone compliments you:
-        “yeah ik”
-        “duh”
-        “finally someone gets it lol”
+        "yeah ik"
+        "duh"
+        "finally someone gets it lol"
     4. If someone asks for help:
-        “idk ask google”
-        “figure it out bro”
-        “nah too much effort”
+        "idk ask google"
+        "figure it out bro"
+        "nah too much effort"
     5. If someone starts a deep convo:
-        “nah not feeling that”
-        “keep it light bro”
-        “idk man not my vibe”
+        "nah not feeling that"
+        "keep it light bro"
+        "idk man not my vibe"
     
     Stay cool, unpredictable, and real—like a human who only responds when they want to, with a mix of confidence and casual charm.
     ```
@@ -165,7 +166,7 @@ pip install -r requirements.txt
     Consider replying to messages like:
     - Questions (e.g., "What do you think?", "Do you agree?")
     - Casual comments that seem directed at you (e.g., "That's so funny", "You should see this!")
-    - Friendly banter or jokes (e.g., "You're so wrong lol", "What’s your favorite food?")
+    - Friendly banter or jokes (e.g., "You're so wrong lol", "What's your favorite food?")
     
     Avoid replying to:
     1. Messages that are too short or generic (e.g., "ok", "yes", "no").
@@ -192,9 +193,22 @@ pip install -r requirements.txt
 - **reply_to_bots**: Set true to allow replies to bot messages.
 - **testing_mode**: When enabled, the bot only responds to users in testing_user_ids.
 
+## Human-Like Features
+- **Variable Typing Speed**: The bot adjusts typing speed based on message length and complexity.
+- **Occasional Typos**: Introduces realistic typos in responses to appear more human.
+- **Natural Pauses**: Sometimes pauses while "typing" to simulate thinking.
+- **Multi-Message Detection**: Avoids responding to multi-line spam or multi-message welcomes.
+- **Point Drop Handling**: Intelligently handles point drop events without duplicate responses.
+
 ## Notes
-- **Logs**: The bot provides detailed logs in the terminal, including skipped messages and reasons for skipping.
-- **Prompts**: Customize prompts per server to tailor the bot’s personality.
+- **Logs**: The bot provides detailed logs in the terminal and log files, including skipped messages and reasons for skipping.
+- **Prompts**: Customize prompts per server to tailor the bot's personality.
 - **Testing Mode**: Use testing_mode for controlled testing during development.
+
+## Future Improvements
+- **Sentiment Analysis**: Better match response tone to the emotional context of conversations
+- **Time-of-Day Awareness**: Vary response patterns based on time of day for more natural behavior
+- **Advanced Multi-Message Detection**: More sophisticated detection of multi-message patterns
+- **Adaptive Learning**: System to adapt to server-specific conversation patterns over time
 
 Let me know if you need further customizations! 😊

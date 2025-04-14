@@ -1,4 +1,4 @@
-#
+# Handles OpenAI interactions and message relevance detection
 #
 # Author: Elias Sjödin
 # Created: 2024-12-31
@@ -8,7 +8,9 @@ import discord
 import os
 import string
 import random
-from logger import log_info, log_custom, log_error
+import datetime
+from datetime import timedelta
+from logger import log_info, log_custom, log_error, log_warning
 from openai import OpenAI
 from colorama import Fore
 from config import MODEL, OPENAI_API_KEY, REPLY_TO_BOTS, RANDOM_ENGAGEMENT
@@ -100,6 +102,17 @@ async def get_categorization_response(prompt: str) -> str:
 
 async def get_ai_response(prompt: str, author: str, context: str, system_prompt: str) -> str:
     try:
+        # Occasionally introduce typos or text shortcuts to appear more human
+        typo_instructions = ""
+        if random.random() < 0.15:  # 15% chance for typo instructions
+            typo_options = [
+                "Occasionally make small typos like missing a letter or swapping two letters.",
+                "Sometimes use text shortcuts like 'u' instead of 'you' or 'rn' instead of 'right now'.",
+                "Occasionally skip apostrophes in contractions like 'dont' instead of 'don't'.",
+                "Sometimes make a small spelling error in a longer word."
+            ]
+            typo_instructions = random.choice(typo_options) + " "
+        
         content_prompt = (
             "Conversation so far:\n"
             f"{context}\n\n"
@@ -107,6 +120,7 @@ async def get_ai_response(prompt: str, author: str, context: str, system_prompt:
             "Match the phrasing of these messages to blend naturally into the conversation.\n\n"
             f"User: {prompt}\n\n"
             f"You are replying to the user: {author}\n\n"
+            f"{typo_instructions}Keep your response short and casual. "
             "FINAL REMINDER: You NEVER capitalize words randomly in the middle of sentences. "
             "Capitalize only proper nouns or the first word of a sentence. "
             "Any deviation from this will be considered invalid."
@@ -151,18 +165,38 @@ async def is_response_needed(
     lower_msg = user_message.lower()
     lower_name = display_name.lower()
 
+    # Always respond to direct replies or mentions
     if is_direct_reply or bot_mentioned:
-        always_reply_keywords = [
-            "are you a bot",
-            "you're a bot",
-            "are you an npc",
-            "you're an npc"
-        ]
+        return True
+        
+    # Always respond to messages that might be questioning if the bot is a bot
+    always_reply_keywords = [
+        "are you a bot",
+        "you're a bot",
+        "are you an npc",
+        "you're an npc",
+        "are you real",
+        "are you ai",
+        "are you human",
+        "are you fake",
+        "you're fake",
+        "you're not real"
+    ]
 
-        if any(kw in lower_msg for kw in always_reply_keywords):
-            return True
-        if lower_name in lower_msg and ("is a bot" in lower_msg or "is an npc" in lower_msg):
-            return True
+    if any(kw in lower_msg for kw in always_reply_keywords):
+        return True
+    if lower_name in lower_msg and any(phrase in lower_msg for phrase in ["is a bot", "is an npc", "is fake", "is ai"]):
+        return True
+        
+    # Respond to questions directed at anyone
+    question_starters = ["what", "how", "why", "when", "where", "who", "can", "could", "would", "should", "is", "are", "do", "does", "did"]
+    if any(lower_msg.strip().startswith(starter) for starter in question_starters) and "?" in lower_msg:
+        return True
+        
+    # Respond to messages that seem to be seeking engagement
+    engagement_phrases = ["anyone", "somebody", "someone", "guys", "y'all", "everyone", "anybody", "thoughts", "opinion", "what do you think"]
+    if any(phrase in lower_msg for phrase in engagement_phrases):
+        return True
 
     direct_reply_text = "The user is replying directly to one of the bot's messages." if is_direct_reply else "The user is NOT replying directly."
     mention_text = f"The bot was {'mentioned' if bot_mentioned else 'NOT mentioned'} in the message."
@@ -170,14 +204,15 @@ async def is_response_needed(
     system_content = (
         "You are an assistant deciding if a response to a user's message is necessary. "
         "Your primary goal is to identify when the bot should reply meaningfully. "
-        "The bot's display name is '{display_name}'. Answer 'yes' if the user's message clearly requires a response. "
+        f"The bot's display name is '{display_name}'. Answer 'yes' if the user's message clearly requires a response. "
         "This includes any of the following: "
         "- The user asks a question, directly or indirectly (e.g., starts with 'can', 'what', 'why', 'how', or similar). "
         "- The user makes a request (e.g., 'say [something]', 'tell me [something]', 'do [something]'). "
         "- The user accuses the bot of being a bot or tests its humanity (e.g., 'are you a bot?', 'say this exact thing'). "
         "- The user explicitly addresses or mentions the bot in a meaningful way. "
-        "Answer 'no' if the message is random, irrelevant, meaningless, or does not require a reply. "
-        "Messages should only be deemed irrelevant if they are completely random, meaningless, or do not engage with the bot."
+        "- The message is interesting, provocative, or would naturally invite a response in human conversation. "
+        "- The message contains strong opinions or statements that would typically prompt reactions. "
+        "Answer 'no' only if the message is completely random, irrelevant, or clearly not meant to engage anyone."
     )
 
     user_content = (
@@ -194,7 +229,7 @@ async def is_response_needed(
         response = client.chat.completions.create(
             model=MODEL,
             max_tokens=50,
-            temperature=0.5,
+            temperature=0.7,  # Increased from 0.5 to be more likely to say yes
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": user_content},
@@ -226,6 +261,25 @@ async def is_message_relevant(
         and message.reference.resolved.author.id == bot_user_id
     )
 
+    # Check for multi-line spam messages
+    try:
+        recent_messages = []
+        async for msg in message.channel.history(limit=5, after=datetime.datetime.utcnow() - timedelta(seconds=5)):
+            recent_messages.append(msg)
+            
+        author_messages = [msg for msg in recent_messages if msg.author == message.author]
+        
+        # If there are multiple messages from the same author in quick succession
+        if len(author_messages) > 2:
+            log_custom(
+                "RELEVANCE",
+                f"Detected multi-line spam from {message.author.name} - {len(author_messages)} messages in 5 seconds. Ignoring.",
+                Fore.CYAN
+            )
+            return False, False
+    except Exception as e:
+        log_error(f"Error checking for multi-line spam: {e}")
+
     if is_only_emojis(message.content.strip()):
         log_custom(
             "RELEVANCE",
@@ -234,46 +288,22 @@ async def is_message_relevant(
         )
         return False, False
 
-    if "welcome" in message.content.strip().lower() and not message.author.bot:
+    # More comprehensive welcome message detection
+    welcome_patterns = ["welcome", "welcom", "wlcm", "welc", "joined", "new member", "say hi to"]
+    if any(pattern in message.content.strip().lower() for pattern in welcome_patterns) and not message.author.bot:
         log_custom(
             "RELEVANCE",
-            "Message is most likely a welcoming message. Deemed irrelevant.",
+            "Message appears to be a welcoming message. Deemed irrelevant.",
             Fore.CYAN
         )
         return False, False
 
-    if message.content.strip().startswith('.'):
+    # Check for command prefixes
+    command_prefixes = ['.', '?', '-', '/', '!', '$', '>']
+    if any(message.content.strip().startswith(prefix) for prefix in command_prefixes):
         log_custom(
             "RELEVANCE",
-            "Message starts with '.'. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False, False
-    if message.content.strip().startswith('?'):
-        log_custom(
-            "RELEVANCE",
-            "Message starts with '?'. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False, False
-    if message.content.strip().startswith('-'):
-        log_custom(
-            "RELEVANCE",
-            "Message starts with '-'. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False, False
-    if message.content.strip().startswith('/'):
-        log_custom(
-            "RELEVANCE",
-            "Message starts with '/'. Deemed irrelevant.",
-            Fore.CYAN
-        )
-        return False, False
-    if message.content.strip().startswith('!'):
-        log_custom(
-            "RELEVANCE",
-            "Message starts with '!'. Deemed irrelevant.",
+            f"Message starts with command prefix '{message.content[0]}'. Deemed irrelevant.",
             Fore.CYAN
         )
         return False, False
@@ -336,6 +366,17 @@ async def is_message_relevant(
         )
         return True, False
 
+    # Point drop detection - avoid responding to these
+    point_drop_patterns = [r"\b[a-zA-Z0-9]{5,8}\b", r"\b[,.!?][a-zA-Z0-9]{4,7}\b"]
+    if any(re.search(pattern, message.content) for pattern in point_drop_patterns) and len(message.content.strip()) < 10:
+        log_custom(
+            "RELEVANCE",
+            "Message appears to be a point drop response. Ignoring.",
+            Fore.CYAN
+        )
+        return False, False
+
+    # Significantly increased random engagement probability
     if random.random() < RANDOM_ENGAGEMENT:
         log_custom(
             "RELEVANCE",
