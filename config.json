@@ -1,10 +1,10 @@
 {
 	"model": "gpt-4o-mini",
-	"reply_cooldown": 30,
-	"queue_cooldown": 20,
+	"reply_cooldown": 25,
+	"queue_cooldown": 15,
 	"reply_batch_size": 4,
 	"max_queue_age_seconds": 90,
-	"random_engagement": 0.5,
+	"random_engagement": 0.75,
 	"reply_instantly": false,
 	"reply_to_bots": false,
 	"testing_mode": false,
@@ -21,7 +21,7 @@
 	"servers": {
 		"219564597349318656": {
 			"channels": [627217930576199690],
-			"exclude_user_ids": [274178934143451137],
+			"exclude_user_ids": [274178934143451137,471705458537791499],
 			"prompt_file": "prompt1.txt",
 			"context_message_count": 50,
 			"history_limit": 50,

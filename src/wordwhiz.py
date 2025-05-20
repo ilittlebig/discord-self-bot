@@ -209,7 +209,7 @@ async def participate_in_wordwhiz(channel: discord.TextChannel, rule: str, keywo
                 # Moderate pause between words
                 elapsed = time.time() - start_time
                 fatigue_factor = min(0.5, elapsed / 20.0)  # Slight fatigue
-                await asyncio.sleep(random.uniform(0.5, 1.0 + fatigue_factor))
+                #await asyncio.sleep(random.uniform(0.5, 1.0 + fatigue_factor))
                 
             except asyncio.TimeoutError:
                 log_warning(f"Timeout while sending word: {word}")
